@@ -56,6 +56,25 @@ use Inertia\Inertia;
         ]);
     }
 
+
+     //  create()
+    public function create()
+    {
+        return Inertia::render('Entities/Create', [
+            'countries' => Country::orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
+    //  edit()
+    public function edit(Entity $entity)
+    {
+        return Inertia::render('Entities/Edit', [
+            'entity' => $entity,
+            'countries' => Country::orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
+
     public function store(StoreEntityRequest $request, CreateEntityAction $action)
     {
         $action->execute($request->validated());
