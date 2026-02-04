@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreEntityRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true; // depois vamos ligar a permissões/policies
+    }
+
+    public function rules(): array
+    {
+        return [
+            'is_client' => ['boolean'],
+            'is_supplier' => ['boolean'],
+
+            'name' => ['required', 'string', 'max:255'],
+
+            'nif' => ['required', 'string', 'max:20', 'unique:entities,nif'],
+
+            'address' => ['nullable', 'string'],
+            'postal_code' => ['nullable', 'regex:/^\d{4}-\d{3}$/'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'country_id' => ['nullable', 'exists:countries,id'],
+
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'mobile' => ['nullable', 'string', 'max:30'],
+            'website' => ['nullable', 'url', 'max:255'],
+
+            'notes' => ['nullable', 'string'],
+            'rgpd_consent' => ['boolean'],
+            'active' => ['boolean'],
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        // se vier tudo falso, força pelo menos um tipo
+        $isClient = (bool) $this->input('is_client', false);
+        $isSupplier = (bool) $this->input('is_supplier', false);
+
+        if (!$isClient && !$isSupplier) {
+            $this->merge(['is_client' => true]);
+        }
+    }
+}
