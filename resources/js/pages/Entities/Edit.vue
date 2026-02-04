@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { useForm, Link } from '@inertiajs/vue3';
 
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
 const props = defineProps({
     entity: Object,
     countries: Array,
@@ -31,157 +36,166 @@ function submit() {
 
 <template>
     <div class="max-w-3xl space-y-6 p-6">
+        <!-- Header -->
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Editar Entidade</h1>
-            <Link href="/entities" class="rounded border px-3 py-2"
-                >Voltar</Link
-            >
+
+            <Link href="/entities">
+                <Button variant="outline">Voltar</Button>
+            </Link>
         </div>
 
-        <form @submit.prevent="submit" class="space-y-4">
-            <div class="flex gap-4">
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" v-model="form.is_client" />
-                    Cliente
-                </label>
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" v-model="form.is_supplier" />
-                    Fornecedor
-                </label>
-            </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>Dados da entidade</CardTitle>
+            </CardHeader>
 
-            <div>
-                <label class="block text-sm">Nome *</label>
-                <input
-                    class="w-full rounded border px-3 py-2"
-                    v-model="form.name"
-                />
-                <div v-if="form.errors.name" class="text-sm text-red-600">
-                    {{ form.errors.name }}
-                </div>
-            </div>
+            <CardContent>
+                <form @submit.prevent="submit" class="space-y-4">
+                    <!-- Tipo -->
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.is_client" />
+                            Cliente
+                        </label>
 
-            <div>
-                <label class="block text-sm">NIF *</label>
-                <input
-                    class="w-full rounded border px-3 py-2"
-                    v-model="form.nif"
-                />
-                <div v-if="form.errors.nif" class="text-sm text-red-600">
-                    {{ form.errors.nif }}
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm">Email</label>
-                <input
-                    class="w-full rounded border px-3 py-2"
-                    v-model="form.email"
-                />
-                <div v-if="form.errors.email" class="text-sm text-red-600">
-                    {{ form.errors.email }}
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm">Morada</label>
-                <input
-                    class="w-full rounded border px-3 py-2"
-                    v-model="form.address"
-                />
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm">Código Postal</label>
-                    <input
-                        class="w-full rounded border px-3 py-2"
-                        placeholder="1234-567"
-                        v-model="form.postal_code"
-                    />
-                    <div
-                        v-if="form.errors.postal_code"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.postal_code }}
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.is_supplier" />
+                            Fornecedor
+                        </label>
                     </div>
-                </div>
-                <div>
-                    <label class="block text-sm">Cidade</label>
-                    <input
-                        class="w-full rounded border px-3 py-2"
-                        v-model="form.city"
-                    />
-                </div>
-            </div>
 
-            <div>
-                <label class="block text-sm">País</label>
-                <select
-                    class="w-full rounded border px-3 py-2"
-                    v-model="form.country_id"
-                >
-                    <option :value="null">—</option>
-                    <option v-for="c in countries" :key="c.id" :value="c.id">
-                        {{ c.name }}
-                    </option>
-                </select>
-            </div>
+                    <!-- Nome -->
+                    <div class="space-y-2">
+                        <Label>Nome *</Label>
+                        <Input v-model="form.name" />
+                        <p v-if="form.errors.name" class="text-sm text-red-600">
+                            {{ form.errors.name }}
+                        </p>
+                    </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm">Telefone</label>
-                    <input
-                        class="w-full rounded border px-3 py-2"
-                        v-model="form.phone"
-                    />
-                </div>
-                <div>
-                    <label class="block text-sm">Telemóvel</label>
-                    <input
-                        class="w-full rounded border px-3 py-2"
-                        v-model="form.mobile"
-                    />
-                </div>
-            </div>
+                    <!-- NIF -->
+                    <div class="space-y-2">
+                        <Label>NIF *</Label>
+                        <Input v-model="form.nif" />
+                        <p v-if="form.errors.nif" class="text-sm text-red-600">
+                            {{ form.errors.nif }}
+                        </p>
+                    </div>
 
-            <div>
-                <label class="block text-sm">Website</label>
-                <input
-                    class="w-full rounded border px-3 py-2"
-                    v-model="form.website"
-                />
-                <div v-if="form.errors.website" class="text-sm text-red-600">
-                    {{ form.errors.website }}
-                </div>
-            </div>
+                    <!-- Email -->
+                    <div class="space-y-2">
+                        <Label>Email</Label>
+                        <Input v-model="form.email" />
+                        <p
+                            v-if="form.errors.email"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.email }}
+                        </p>
+                    </div>
 
-            <div>
-                <label class="block text-sm">Notas</label>
-                <textarea
-                    class="w-full rounded border px-3 py-2"
-                    rows="3"
-                    v-model="form.notes"
-                ></textarea>
-            </div>
+                    <!-- Morada -->
+                    <div class="space-y-2">
+                        <Label>Morada</Label>
+                        <Input v-model="form.address" />
+                    </div>
 
-            <div class="flex gap-6">
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" v-model="form.rgpd_consent" />
-                    Consentimento RGPD
-                </label>
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" v-model="form.active" />
-                    Ativo
-                </label>
-            </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label>Código Postal</Label>
+                            <Input
+                                v-model="form.postal_code"
+                                placeholder="1234-567"
+                            />
+                            <p
+                                v-if="form.errors.postal_code"
+                                class="text-sm text-red-600"
+                            >
+                                {{ form.errors.postal_code }}
+                            </p>
+                        </div>
 
-            <button
-                class="rounded border px-4 py-2"
-                :disabled="form.processing"
-            >
-                Guardar alterações
-            </button>
-        </form>
+                        <div class="space-y-2">
+                            <Label>Cidade</Label>
+                            <Input v-model="form.city" />
+                        </div>
+                    </div>
+
+                    <!-- País -->
+                    <div class="space-y-2">
+                        <Label>País</Label>
+                        <select
+                            v-model="form.country_id"
+                            class="w-full rounded-md border px-3 py-2"
+                        >
+                            <option :value="null">—</option>
+                            <option
+                                v-for="c in countries"
+                                :key="c.id"
+                                :value="c.id"
+                            >
+                                {{ c.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label>Telefone</Label>
+                            <Input v-model="form.phone" />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label>Telemóvel</Label>
+                            <Input v-model="form.mobile" />
+                        </div>
+                    </div>
+
+                    <!-- Website -->
+                    <div class="space-y-2">
+                        <Label>Website</Label>
+                        <Input v-model="form.website" />
+                        <p
+                            v-if="form.errors.website"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.website }}
+                        </p>
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="space-y-2">
+                        <Label>Notas</Label>
+                        <textarea
+                            rows="3"
+                            v-model="form.notes"
+                            class="w-full rounded-md border px-3 py-2"
+                        />
+                    </div>
+
+                    <!-- Flags -->
+                    <div class="flex gap-6">
+                        <label class="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                v-model="form.rgpd_consent"
+                            />
+                            Consentimento RGPD
+                        </label>
+
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.active" />
+                            Ativo
+                        </label>
+                    </div>
+
+                    <!-- Submit -->
+                    <Button type="submit" :disabled="form.processing">
+                        Guardar alterações
+                    </Button>
+                </form>
+            </CardContent>
+        </Card>
     </div>
 </template>

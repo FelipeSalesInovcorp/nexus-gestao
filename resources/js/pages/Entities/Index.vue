@@ -1,13 +1,48 @@
 <script setup lang="ts">
-import { router, Link } from '@inertiajs/vue3'; // ADD Link
+import { router, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const props = defineProps({
-    type: String,
-    filters: Object,
-    entities: Object,
-    countries: Array,
-});
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+    Table,
+    TableHeader,
+    TableBody,
+    TableRow,
+    TableHead,
+    TableCell,
+} from '@/components/ui/table';
+
+type EntityRow = {
+    id: number;
+    number?: string | number | null;
+    name: string;
+    nif?: string | null;
+    email?: string | null;
+    is_client: boolean;
+    is_supplier: boolean;
+    active: boolean;
+};
+
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+type EntitiesPagination = {
+    data: EntityRow[];
+    links: PaginationLink[];
+};
+
+const props = defineProps<{
+    type: string | null;
+    filters: { search?: string } | null;
+    entities: EntitiesPagination;
+    countries: Array<any>;
+}>();
 
 const search = ref(props.filters?.search ?? '');
 
@@ -19,7 +54,7 @@ function submitSearch() {
     );
 }
 
-function goType(t) {
+function goType(t: string | null) {
     router.get(
         '/entities',
         { type: t, search: search.value },
@@ -33,96 +68,122 @@ function goType(t) {
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Entidades</h1>
 
-            <div class="space-x-2">
-                <!--  4.1 Botão Nova Entidade -->
-                <Link href="/entities/create" class="rounded border px-3 py-2">
-                    Nova Entidade
+            <div class="flex gap-2">
+                <Link href="/entities/create">
+                    <Button>Nova Entidade</Button>
                 </Link>
 
-                <button
-                    class="rounded border px-3 py-2"
-                    @click="goType('client')"
+                <Button variant="outline" @click="goType('client')"
+                    >Clientes</Button
                 >
-                    Clientes
-                </button>
-                <button
-                    class="rounded border px-3 py-2"
-                    @click="goType('supplier')"
+                <Button variant="outline" @click="goType('supplier')"
+                    >Fornecedores</Button
                 >
-                    Fornecedores
-                </button>
-                <button class="rounded border px-3 py-2" @click="goType(null)">
-                    Todas
-                </button>
+                <Button variant="outline" @click="goType(null)">Todas</Button>
             </div>
         </div>
 
-        <div class="flex gap-2">
-            <input
-                v-model="search"
-                class="w-full rounded border px-3 py-2"
-                placeholder="Pesquisar por nome, NIF ou email"
-            />
-            <button class="rounded border px-4 py-2" @click="submitSearch">
-                Pesquisar
-            </button>
-        </div>
+        <Card>
+            <CardHeader class="pb-2">
+                <CardTitle class="text-base">Pesquisa</CardTitle>
+            </CardHeader>
 
-        <div class="overflow-hidden rounded border">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="p-3 text-left">Nº</th>
-                        <th class="p-3 text-left">Nome</th>
-                        <th class="p-3 text-left">NIF</th>
-                        <th class="p-3 text-left">Email</th>
-                        <th class="p-3 text-left">Tipo</th>
-                        <th class="p-3 text-left">Ativo</th>
-                        <th class="p-3 text-left">Ações</th>
-                        <!-- ADD coluna -->
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="e in entities.data" :key="e.id" class="border-t">
-                        <td class="p-3">{{ e.number }}</td>
-                        <td class="p-3">{{ e.name }}</td>
-                        <td class="p-3">{{ e.nif }}</td>
-                        <td class="p-3">{{ e.email }}</td>
-                        <td class="p-3">
-                            <span v-if="e.is_client">Cliente</span>
-                            <span v-if="e.is_client && e.is_supplier"> / </span>
-                            <span v-if="e.is_supplier">Fornecedor</span>
-                        </td>
-                        <td class="p-3">{{ e.active ? 'Sim' : 'Não' }}</td>
+            <CardContent class="space-y-4">
+                <div class="flex gap-2">
+                    <Input
+                        v-model="search"
+                        placeholder="Pesquisar por nome, NIF ou email"
+                    />
+                    <Button @click="submitSearch">Pesquisar</Button>
+                </div>
 
-                        <!--  4.2 Link Editar -->
-                        <td class="p-3">
-                            <Link
-                                :href="`/entities/${e.id}/edit`"
-                                class="underline"
+                <div class="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Nº</TableHead>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>NIF</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Tipo</TableHead>
+                                <TableHead>Ativo</TableHead>
+                                <TableHead class="text-right">Ações</TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        <TableBody>
+                            <TableRow
+                                v-for="e in props.entities.data"
+                                :key="e.id"
                             >
-                                Editar
-                            </Link>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+                                <TableCell>{{ e.number }}</TableCell>
+                                <TableCell class="font-medium">{{
+                                    e.name
+                                }}</TableCell>
+                                <TableCell>{{ e.nif }}</TableCell>
+                                <TableCell>{{ e.email }}</TableCell>
 
-        <div class="flex gap-2">
-            <button
-                v-for="link in entities.links"
-                :key="link.label"
-                class="rounded border px-3 py-2"
-                :disabled="!link.url"
-                v-html="link.label"
-                @click="
-                    link.url &&
-                    router.visit(
-                        new URL(link.url).pathname + new URL(link.url).search,
-                    )
-                "
-            />
-        </div>
+                                <TableCell>
+                                    <div class="flex gap-2">
+                                        <Badge
+                                            v-if="e.is_client"
+                                            variant="secondary"
+                                            >Cliente</Badge
+                                        >
+                                        <Badge
+                                            v-if="e.is_supplier"
+                                            variant="secondary"
+                                            >Fornecedor</Badge
+                                        >
+                                    </div>
+                                </TableCell>
+
+                                <TableCell>
+                                    <Badge
+                                        :variant="
+                                            e.active ? 'default' : 'secondary'
+                                        "
+                                    >
+                                        {{ e.active ? 'Ativo' : 'Inativo' }}
+                                    </Badge>
+                                </TableCell>
+
+                                <TableCell class="text-right">
+                                    <Link
+                                        :href="`/entities/${e.id}/edit`"
+                                        class="underline"
+                                    >
+                                        Editar
+                                    </Link>
+                                </TableCell>
+                            </TableRow>
+
+                            <TableRow v-if="props.entities.data.length === 0">
+                                <TableCell
+                                    colspan="7"
+                                    class="py-8 text-center text-muted-foreground"
+                                >
+                                    Nenhuma entidade encontrada.
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <Button
+                    v-for="link in props.entities.links"
+                    :key="link.label"
+                    variant="outline"
+                    :disabled="!link.url"
+                    @click="link.url && router.visit(link.url)"
+                >
+                    {{
+                        link.label
+                            .replace(/&laquo;|&raquo;/g, '')
+                            .replace(/&lsaquo;|&rsaquo;/g, '')
+                    }}
+                </Button>
+            </CardContent>
+        </Card>
     </div>
 </template>
