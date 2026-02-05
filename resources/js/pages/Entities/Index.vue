@@ -64,23 +64,28 @@ function goType(t: string | null) {
 </script>
 
 <template>
+    <!--<div class="space-y-4 p-6">-->
     <div class="space-y-4 p-6">
-        <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-semibold">Entidades</h1>
+        <div class="mb-6 flex items-center justify-between">
+            <h1 class="text-3xl font-bold tracking-tight">Entidades</h1>
 
-            <div class="flex gap-2">
-                <Link href="/entities/create">
-                    <Button>Nova Entidade</Button>
-                </Link>
+            <Link
+                href="/entities/create"
+                class="rounded-lg bg-black px-4 py-2 text-white transition hover:opacity-90"
+            >
+                Nova Entidade
+            </Link>
 
-                <Button variant="outline" @click="goType('client')"
-                    >Clientes</Button
-                >
-                <Button variant="outline" @click="goType('supplier')"
-                    >Fornecedores</Button
-                >
-                <Button variant="outline" @click="goType(null)">Todas</Button>
-            </div>
+            <!-- filtros continuam abaixo -->
+            <!--<div class="flex gap-2 mb-4">-->
+            <Button variant="outline" @click="goType('client')"
+                >Clientes</Button
+            >
+            <Button variant="outline" @click="goType('supplier')"
+                >Fornecedores</Button
+            >
+            <Button variant="outline" @click="goType(null)">Todas</Button>
+            <!--</div>-->
         </div>
 
         <Card>
@@ -97,9 +102,9 @@ function goType(t: string | null) {
                     <Button @click="submitSearch">Pesquisar</Button>
                 </div>
 
-                <div class="rounded-md border">
+                <div class="overflow-hidden rounded-xl border shadow-sm">
                     <Table>
-                        <TableHeader>
+                        <TableHeader class="bg-gray-100 dark:bg-gray-800">
                             <TableRow>
                                 <TableHead>Nº</TableHead>
                                 <TableHead>Nome</TableHead>

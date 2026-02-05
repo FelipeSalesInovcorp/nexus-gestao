@@ -20,8 +20,8 @@ use Inertia\Inertia;
     {
         return [
             new Middleware('permission:entities.view', only: ['index']),
-            new Middleware('permission:entities.create', only: ['store']),
-            new Middleware('permission:entities.edit', only: ['update']),
+            new Middleware('permission:entities.create', only: ['create','store']),
+            new Middleware('permission:entities.edit', only: ['edit','update']),
             new Middleware('permission:entities.delete', only: ['destroy']),
         ];
     }
@@ -56,7 +56,6 @@ use Inertia\Inertia;
         ]);
     }
 
-
      //  create()
     public function create()
     {
@@ -68,6 +67,8 @@ use Inertia\Inertia;
     //  edit()
     public function edit(Entity $entity)
     {
+        $entity->load('contacts');
+
         return Inertia::render('Entities/Edit', [
             'entity' => $entity,
             'countries' => Country::orderBy('name')->get(['id', 'name']),

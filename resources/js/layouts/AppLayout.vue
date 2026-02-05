@@ -14,7 +14,7 @@ withDefaults(defineProps<Props>(), {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-6">
+        <div class="mx-auto max-w-7xl p-6">
             <FlashMessage class="mb-4" />
             <slot />
         </div>
