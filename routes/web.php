@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\EntityContactController;
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -25,6 +27,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/entities', [EntityController::class, 'store'])->name('entities.store');
     Route::put('/entities/{entity}', [EntityController::class, 'update'])->name('entities.update');
     Route::delete('/entities/{entity}', [EntityController::class, 'destroy'])->name('entities.destroy');
+
+    Route::post('/entities/{entity}/contacts', [EntityContactController::class, 'store'])->name('entities.contacts.store');
+    Route::delete('/entities/{entity}/contacts/{contact}', [EntityContactController::class, 'destroy'])->name('entities.contacts.destroy');
+
 });
 
 require __DIR__ . '/settings.php';
