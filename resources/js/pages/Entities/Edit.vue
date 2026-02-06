@@ -41,7 +41,8 @@ const contactForm = useForm({
     name: '',
     email: '',
     phone: '',
-    contact_role_id: null,
+    role: '',  //  fallback
+    contact_role_id: null as number | null,
     is_primary: false,
 });
 
@@ -294,7 +295,7 @@ function removeContact(contactId: number) {
                             </p>
                         </div>
 
-                        <div class="space-y-2">
+                        <!--<div class="space-y-2">
                             <Label>Cargo</Label>
                                 <select v-model="contactForm.contact_role_id" class="w-full rounded-md border px-3 py-2">
                                 <option :value="null">— Selecionar cargo —</option>
@@ -303,7 +304,22 @@ function removeContact(contactId: number) {
                                     {{ r.name }}
                                 </option>
                             </select>
+                        </div>-->
+
+
+                        <div class="space-y-2">
+                            <Label>Cargo</Label>
+                            <select v-model="contactForm.contact_role_id" class="w-full rounded-md border px-3 py-2">
+                                <option :value="null">—</option>
+                                <option v-for="r in props.contactRoles" :key="r.id" :value="r.id">
+                                    {{ r.name }}
+                                </option>
+                            </select>
+                            <p v-if="contactForm.errors.contact_role_id" class="text-sm text-red-600">
+                                {{ contactForm.errors.contact_role_id }}
+                            </p>
                         </div>
+
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
