@@ -5,7 +5,8 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\EntityContactController;
-use App\Http\Controllers\ContactRoleController;
+use App\Http\Controllers\Config\ContactRoleController;
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -32,15 +33,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/entities/{entity}/contacts', [EntityContactController::class, 'store'])->name('entities.contacts.store');
     Route::delete('/entities/{entity}/contacts/{contact}', [EntityContactController::class, 'destroy'])->name('entities.contacts.destroy');
 
-    // Config - Contact Roles
-    Route::prefix('config')->group(function () {
-        Route::get('/contact-roles', [ContactRoleController::class, 'index'])->name('contact-roles.index');
-        Route::get('/contact-roles/create', [ContactRoleController::class, 'create'])->name('contact-roles.create');
-        Route::post('/contact-roles', [ContactRoleController::class, 'store'])->name('contact-roles.store');
-        Route::get('/contact-roles/{role}/edit', [ContactRoleController::class, 'edit'])->name('contact-roles.edit');
-        Route::put('/contact-roles/{role}', [ContactRoleController::class, 'update'])->name('contact-roles.update');
-        Route::delete('/contact-roles/{role}', [ContactRoleController::class, 'destroy'])->name('contact-roles.destroy');
-    });
+    // Config - Contact Roles (resource)
+    Route::resource('config/contact-roles', ContactRoleController::class)
+        ->names('contact-roles');
 });
 
 require __DIR__ . '/settings.php';

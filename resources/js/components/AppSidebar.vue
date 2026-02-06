@@ -13,15 +13,37 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+//import { dashboard } from '@/routes';
+
 import { type NavItem } from '@/types';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
+/*const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+];*/
+
+const mainNavItems: NavItem[] = [
+    {
+        title: 'Dashboard',
+        href: '/dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Entidades',
+        href: '/entities',
+    },
+    {
+        title: 'Configuração',
+        children: [
+            {
+                title: 'Funções de Contacto',
+                href: '/config/contact-roles',
+            },
+        ],
     },
 ];
 
@@ -40,12 +62,14 @@ const footerNavItems: NavItem[] = [
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
+    <!--<Sidebar collapsible="icon" variant="inset">-->
+    <Sidebar variant="inset">
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
+                        <!--<Link :href="dashboard()"-->
+                        <Link href="/dashboard">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
