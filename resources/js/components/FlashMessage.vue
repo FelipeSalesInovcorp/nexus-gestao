@@ -5,30 +5,23 @@ import { computed } from 'vue';
 type Flash = {
     success?: string;
     error?: string;
+    message?: string;
 };
 
 const page = usePage();
 
-const flash = computed(() => (page.props.value.flash ?? {}) as Flash);
+const flash = computed<Flash>(() => {
+    const props: any = page.props ?? {};
+    return (props.flash ?? {}) as Flash;
+});
 
-const success = computed(() => flash.value.success);
-const error = computed(() => flash.value.error);
+const text = computed(
+    () => flash.value.success || flash.value.error || flash.value.message || '',
+);
 </script>
 
 <template>
-    <div class="space-y-2">
-        <div
-            v-if="success"
-            class="rounded border bg-green-50 px-4 py-3 text-green-800"
-        >
-            {{ success }}
-        </div>
-
-        <div
-            v-if="error"
-            class="rounded border bg-red-50 px-4 py-3 text-red-800"
-        >
-            {{ error }}
-        </div>
+    <div v-if="text" class="mb-4 rounded border p-3 text-sm">
+        {{ text }}
     </div>
 </template>
