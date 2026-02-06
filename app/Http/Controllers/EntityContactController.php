@@ -16,7 +16,8 @@ class EntityContactController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'role' => ['nullable', 'string', 'max:100'],
+            //'role' => ['nullable', 'string', 'max:100'],
+            'contact_role_id' => ['nullable', 'exists:contact_roles,id'],
             'is_primary' => ['sometimes','boolean'],
         ]);
 

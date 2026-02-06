@@ -50,4 +50,10 @@ class Entity extends Model
     {
         return $this->hasMany(Contact::class);
     }
+    
+    // Get primary contact
+    public function primaryContact()
+    {
+        return $this->hasOne(Contact::class)->where('is_primary', true);
+    }
 }

@@ -9,6 +9,7 @@ use App\Http\Requests\StoreEntityRequest;
 use App\Http\Requests\UpdateEntityRequest;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use App\Models\ContactRole;
 use App\Models\Country;
 use App\Models\Entity;
 use Illuminate\Http\Request;
@@ -32,12 +33,17 @@ use Inertia\Inertia;
         $type = $request->query('type'); // client | supplier | null
         $search = $request->query('search');
 
-        $query = Entity::query();
+        $query = Entity::query()
+            ->with(['primaryContact.contactRole']); //  NOVO eager-load
 
-        if ($type === 'client') $query->where('is_client', true);
-        if ($type === 'supplier') $query->where('is_supplier', true);
+        if ($type === 'client') {
+            $query->where('is_client', true);
+        }
 
-        //if ($search = $request->query('search')) 
+        if ($type === 'supplier') {
+            $query->where('is_supplier', true);
+        }
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -46,17 +52,42 @@ use Inertia\Inertia;
             });
         }
 
+        $entities = $query
+            ->orderByDesc('id')
+            ->paginate(15)
+            ->withQueryString()
+            ->through(function ($e) {
+                return [
+                    'id' => $e->id,
+                    'number' => $e->number,
+                    'name' => $e->name,
+                    'nif' => $e->nif,
+                    'email' => $e->email,
+                    'is_client' => (bool) $e->is_client,
+                    'is_supplier' => (bool) $e->is_supplier,
+                    'active' => (bool) $e->active,
+
+                    //  NOVO
+                    'primary_contact' => $e->primaryContact ? [
+                        'name' => $e->primaryContact->name,
+                        'role_name' => $e->primaryContact->contactRole?->name
+                            ?? $e->primaryContact->role, // fallback
+                    ] : null,
+                ];
+            });
+
         return Inertia::render('Entities/Index', [
             'type' => $type,
             'filters' => [
                 'search' => $search,
             ],
-            'entities' => $query->orderByDesc('id')->paginate(15)->withQueryString(),
+            'entities' => $entities, // ✅ troca aqui
             'countries' => Country::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
-     //  create()
+
+    //  create()
     public function create()
     {
         return Inertia::render('Entities/Create', [
@@ -67,11 +98,21 @@ use Inertia\Inertia;
     //  edit()
     public function edit(Entity $entity)
     {
-        $entity->load('contacts');
+        /*$entity->load('contacts');
 
         return Inertia::render('Entities/Edit', [
             'entity' => $entity,
             'countries' => Country::orderBy('name')->get(['id', 'name']),
+            'contactRoles' => ContactRole::orderBy('name')->get(['id', 'name']),
+
+        ]);*/
+
+        $entity->load(['contacts.contactRole']);
+
+        return Inertia::render('Entities/Edit', [
+            'entity' => $entity,
+            'countries' => Country::orderBy('name')->get(['id', 'name']),
+            'contactRoles' => \App\Models\ContactRole::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
