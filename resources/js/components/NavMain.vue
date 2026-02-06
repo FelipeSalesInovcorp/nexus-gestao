@@ -2,7 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import {
     SidebarGroup,
-    SidebarGroupLabel,
+    //SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -18,15 +18,15 @@ const { isCurrentUrl } = useCurrentUrl();
 <template>
     <SidebarGroup class="px-2 py-0">
         <!--<SidebarGroupLabel>Platform</SidebarGroupLabel>-->
-        <SidebarGroupLabel>MENU TESTE</SidebarGroupLabel>
+        
 
-        <SidebarMenuItem>
+        <!--<SidebarMenuItem>
             <SidebarMenuButton>
                 <span style="color: red; font-weight: bold"
                     >MENU TESTE (SE APARECER, ESTÁ OK)</span
                 >
             </SidebarMenuButton>
-        </SidebarMenuItem>
+        </SidebarMenuItem>-->
 
         <SidebarMenu>
             <template v-for="item in items" :key="item.title">

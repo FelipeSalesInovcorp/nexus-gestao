@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 const props = defineProps({
     entity: Object,
     countries: Array,
+    contactRoles: Array,
 });
 
 const form = useForm({
@@ -40,7 +41,7 @@ const contactForm = useForm({
     name: '',
     email: '',
     phone: '',
-    role: '',
+    contact_role_id: null,
     is_primary: false,
 });
 
@@ -254,11 +255,19 @@ function removeContact(contactId: number) {
                                 </span>
                             </div>
 
-                            <div class="text-sm text-muted-foreground">
+                            <!--<div class="text-sm text-muted-foreground">
                                 <span v-if="c.role">{{ c.role }} · </span>
                                 <span v-if="c.email">{{ c.email }} · </span>
                                 <span v-if="c.phone">{{ c.phone }}</span>
+                            </div>-->
+
+                            <div class="text-sm text-muted-foreground">
+                                <span v-if="c.contact_role?.name">{{ c.contact_role.name }} · </span>
+                                <span v-else-if="c.role">{{ c.role }} · </span>
+                                <span v-if="c.email">{{ c.email }} · </span>
+                                <span v-if="c.phone">{{ c.phone }}</span>
                             </div>
+
                         </div>
 
                         <Button variant="outline" @click="removeContact(c.id)"
@@ -287,10 +296,13 @@ function removeContact(contactId: number) {
 
                         <div class="space-y-2">
                             <Label>Cargo</Label>
-                            <Input
-                                v-model="contactForm.role"
-                                placeholder="Ex: Compras"
-                            />
+                                <select v-model="contactForm.contact_role_id" class="w-full rounded-md border px-3 py-2">
+                                <option :value="null">— Selecionar cargo —</option>
+
+                                <option v-for="r in props.contactRoles" :key="r.id" :value="r.id">
+                                    {{ r.name }}
+                                </option>
+                            </select>
                         </div>
                     </div>
 
