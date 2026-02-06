@@ -18,6 +18,7 @@ class CreateContactAction
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
+            'contact_role_id' => $data['contact_role_id'] ?? null,
             'role' => $data['role'] ?? null,
             'is_primary' => (bool)($data['is_primary'] ?? false),
         ]);

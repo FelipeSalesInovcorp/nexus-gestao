@@ -6,6 +6,7 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\EntityContactController;
 use App\Http\Controllers\Config\ContactRoleController;
+use App\Http\Controllers\ContactController;
 
 
 Route::get('/', function () {
@@ -36,6 +37,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Config - Contact Roles (resource)
     Route::resource('config/contact-roles', ContactRoleController::class)
         ->names('contact-roles');
+
+    // Contacts
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+    });
+
 });
 
 require __DIR__ . '/settings.php';

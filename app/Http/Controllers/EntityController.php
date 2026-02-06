@@ -34,7 +34,7 @@ use Inertia\Inertia;
         $search = $request->query('search');
 
         $query = Entity::query()
-            ->with(['primaryContact.contactRole']); //  NOVO eager-load
+            ->with(['primaryContact.contactRole', 'contacts.contactRole']); //  NOVO eager-load
 
         if ($type === 'client') {
             $query->where('is_client', true);
@@ -81,7 +81,7 @@ use Inertia\Inertia;
             'filters' => [
                 'search' => $search,
             ],
-            'entities' => $entities, // ✅ troca aqui
+            'entities' => $entities, //  troca 
             'countries' => Country::orderBy('name')->get(['id', 'name']),
         ]);
     }
