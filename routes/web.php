@@ -7,6 +7,7 @@ use App\Http\Controllers\EntityController;
 use App\Http\Controllers\EntityContactController;
 use App\Http\Controllers\Config\ContactRoleController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Config\TaxRateController;
 
 
 Route::get('/', function () {
@@ -42,6 +43,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
     });
+
+    // Config - Tax Rates
+    Route::resource('config/tax-rates', TaxRateController::class)
+        ->only(['index', 'create', 'store', 'destroy'])
+        ->names('tax-rates');
 
 });
 

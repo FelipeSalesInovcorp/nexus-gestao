@@ -1,47 +1,62 @@
 <script setup lang="ts">
-import { router, Link } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { router, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+    Table,
+    TableHeader,
+    TableBody,
+    TableRow,
+    TableHead,
+    TableCell,
+} from '@/components/ui/table';
 
-type Role = { id: number; name: string }
+type Role = { id: number; name: string };
 
 type ContactRow = {
-    id: number
-    name: string
-    email?: string | null
-    phone?: string | null
-    is_primary: boolean
-    role_name?: string | null
-    entity?: { id: number; number?: string | number | null; name: string } | null
-}
+    id: number;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    is_primary: boolean;
+    role_name?: string | null;
+    entity?: {
+        id: number;
+        number?: string | number | null;
+        name: string;
+    } | null;
+};
 
-type PaginationLink = { url: string | null; label: string; active: boolean }
+type PaginationLink = { url: string | null; label: string; active: boolean };
 
 const props = defineProps<{
-    filters: { search?: string | null; role_id?: string | number | null; primary?: boolean }
-    contacts: { data: ContactRow[]; links: PaginationLink[] }
-    roles: Role[]
-}>()
+    filters: {
+        search?: string | null;
+        contact_role_id?: string | number | null;
+        only_primary?: boolean;
+    };
+    contacts: { data: ContactRow[]; links: PaginationLink[] };
+    roles: Role[];
+}>();
 
-const search = ref(props.filters?.search ?? '')
-const roleId = ref(props.filters?.role_id ?? '')
-const primary = ref(!!props.filters?.primary)
+const search = ref(props.filters?.search ?? '');
+const roleId = ref(props.filters?.contact_role_id ?? '');
+const onlyPrimary = ref(!!props.filters?.only_primary);
 
 function applyFilters() {
     router.get(
         '/contacts',
         {
             search: search.value || null,
-            role_id: roleId.value || null,
-            primary: primary.value ? 1 : null,
+            contact_role_id: roleId.value || null,
+            only_primary: onlyPrimary.value ? 1 : null,
         },
         { preserveState: true, preserveScroll: true },
-    )
+    );
 }
 </script>
 
@@ -49,7 +64,9 @@ function applyFilters() {
     <div class="space-y-4 p-6">
         <div class="flex items-center justify-between">
             <h1 class="text-3xl font-bold tracking-tight">Contactos</h1>
-            <Link href="/entities" class="text-sm underline">Ver Entidades</Link>
+            <Link href="/entities" class="text-sm underline"
+                >Ver Entidades</Link
+            >
         </div>
 
         <Card>
@@ -61,24 +78,39 @@ function applyFilters() {
                 <div class="grid gap-3 md:grid-cols-3">
                     <div class="space-y-2">
                         <div class="text-sm font-medium">Pesquisa</div>
-                        <Input v-model="search" placeholder="Nome, email ou telefone" @keyup.enter="applyFilters" />
+                        <Input
+                            v-model="search"
+                            placeholder="Nome, email ou telefone"
+                            @keyup.enter="applyFilters"
+                        />
                     </div>
 
                     <div class="space-y-2">
                         <div class="text-sm font-medium">Cargo</div>
-                        <select v-model="roleId" class="w-full rounded-md border px-3 py-2">
+                        <select
+                            v-model="roleId"
+                            class="w-full rounded-md border px-3 py-2"
+                        >
                             <option value="">—</option>
-                            <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.name }}</option>
+                            <option
+                                v-for="r in roles"
+                                :key="r.id"
+                                :value="r.id"
+                            >
+                                {{ r.name }}
+                            </option>
                         </select>
                     </div>
 
                     <div class="flex items-end gap-3">
                         <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="primary" />
+                            <input type="checkbox" v-model="onlyPrimary" />
                             Só principais
                         </label>
 
-                        <Button variant="outline" @click="applyFilters">Aplicar</Button>
+                        <Button variant="outline" @click="applyFilters"
+                            >Aplicar</Button
+                        >
                     </div>
                 </div>
 
@@ -97,35 +129,59 @@ function applyFilters() {
                         </TableHeader>
 
                         <TableBody>
-                            <TableRow v-for="c in props.contacts.data" :key="c.id">
-                                <TableCell class="font-medium">{{ c.name }}</TableCell>
+                            <TableRow
+                                v-for="c in props.contacts.data"
+                                :key="c.id"
+                            >
+                                <TableCell class="font-medium">{{
+                                    c.name
+                                }}</TableCell>
                                 <TableCell>{{ c.email ?? '—' }}</TableCell>
                                 <TableCell>{{ c.phone ?? '—' }}</TableCell>
                                 <TableCell>{{ c.role_name ?? '—' }}</TableCell>
 
                                 <TableCell>
-                                    <Badge :variant="c.is_primary ? 'default' : 'secondary'">
+                                    <Badge
+                                        :variant="
+                                            c.is_primary
+                                                ? 'default'
+                                                : 'secondary'
+                                        "
+                                    >
                                         {{ c.is_primary ? 'Sim' : 'Não' }}
                                     </Badge>
                                 </TableCell>
 
                                 <TableCell>
                                     <div v-if="c.entity">
-                                        <div class="text-sm font-medium">{{ c.entity.name }}</div>
-                                        <div class="text-xs text-muted-foreground">Nº {{ c.entity.number }}</div>
+                                        <div class="text-sm font-medium">
+                                            {{ c.entity.name }}
+                                        </div>
+                                        <div
+                                            class="text-xs text-muted-foreground"
+                                        >
+                                            Nº {{ c.entity.number }}
+                                        </div>
                                     </div>
                                     <span v-else>—</span>
                                 </TableCell>
 
                                 <TableCell class="text-right">
-                                    <Link v-if="c.entity" :href="`/entities/${c.entity.id}/edit`" class="underline">
+                                    <Link
+                                        v-if="c.entity"
+                                        :href="`/entities/${c.entity.id}/edit`"
+                                        class="underline"
+                                    >
                                         Editar Entidade
                                     </Link>
                                 </TableCell>
                             </TableRow>
 
                             <TableRow v-if="props.contacts.data.length === 0">
-                                <TableCell colspan="7" class="py-8 text-center text-muted-foreground">
+                                <TableCell
+                                    colspan="7"
+                                    class="py-8 text-center text-muted-foreground"
+                                >
                                     Nenhum contacto encontrado.
                                 </TableCell>
                             </TableRow>
@@ -134,9 +190,19 @@ function applyFilters() {
                 </div>
 
                 <div class="flex flex-wrap gap-2">
-                    <Button v-for="link in props.contacts.links" :key="link.label" variant="outline"
-                        :disabled="!link.url" @click="link.url && router.visit(link.url)">
-                        {{ link.label.replace(/&laquo;|&raquo;|&lsaquo;|&rsaquo;/g, '') }}
+                    <Button
+                        v-for="link in props.contacts.links"
+                        :key="link.label"
+                        variant="outline"
+                        :disabled="!link.url"
+                        @click="link.url && router.visit(link.url)"
+                    >
+                        {{
+                            link.label.replace(
+                                /&laquo;|&raquo;|&lsaquo;|&rsaquo;/g,
+                                '',
+                            )
+                        }}
                     </Button>
                 </div>
             </CardContent>
