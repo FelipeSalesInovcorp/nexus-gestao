@@ -41,7 +41,7 @@ const contactForm = useForm({
     name: '',
     email: '',
     phone: '',
-    role: '',  //  fallback
+    role: '', //  fallback
     contact_role_id: null as number | null,
     is_primary: false,
 });
@@ -263,12 +263,13 @@ function removeContact(contactId: number) {
                             </div>-->
 
                             <div class="text-sm text-muted-foreground">
-                                <span v-if="c.contact_role?.name">{{ c.contact_role.name }} · </span>
+                                <span v-if="c.contact_role?.name"
+                                    >{{ c.contact_role.name }} ·
+                                </span>
                                 <span v-else-if="c.role">{{ c.role }} · </span>
                                 <span v-if="c.email">{{ c.email }} · </span>
                                 <span v-if="c.phone">{{ c.phone }}</span>
                             </div>
-
                         </div>
 
                         <Button variant="outline" @click="removeContact(c.id)"
@@ -306,20 +307,28 @@ function removeContact(contactId: number) {
                             </select>
                         </div>-->
 
-
                         <div class="space-y-2">
                             <Label>Cargo</Label>
-                            <select v-model="contactForm.contact_role_id" class="w-full rounded-md border px-3 py-2">
+                            <select
+                                v-model="contactForm.contact_role_id"
+                                class="w-full rounded-md border px-3 py-2"
+                            >
                                 <option :value="null">—</option>
-                                <option v-for="r in props.contactRoles" :key="r.id" :value="r.id">
+                                <option
+                                    v-for="r in props.contactRoles"
+                                    :key="r.id"
+                                    :value="r.id"
+                                >
                                     {{ r.name }}
                                 </option>
                             </select>
-                            <p v-if="contactForm.errors.contact_role_id" class="text-sm text-red-600">
+                            <p
+                                v-if="contactForm.errors.contact_role_id"
+                                class="text-sm text-red-600"
+                            >
                                 {{ contactForm.errors.contact_role_id }}
                             </p>
                         </div>
-
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">

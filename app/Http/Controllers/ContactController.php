@@ -11,13 +11,17 @@ class ContactController extends Controller
 {
     public function index(Request $request, ListContactsAction $action)
     {
+        $filters = [
+            'search' => $request->query('search'),
+            'contact_role_id' => $request->query('contact_role_id'),
+            'only_primary' => $request->boolean('only_primary'),
+        ];
+
+        $contacts = $action->execute($filters);
+
         return Inertia::render('Contacts/Index', [
-            'filters' => [
-                'search' => $request->query('search'),
-                'role_id' => $request->query('role_id'),
-                'primary' => $request->boolean('primary'),
-            ],
-            'contacts' => $action->execute($request),
+            'filters' => $filters,
+            'contacts' => $contacts,
             'roles' => ContactRole::orderBy('name')->get(['id', 'name']),
         ]);
     }

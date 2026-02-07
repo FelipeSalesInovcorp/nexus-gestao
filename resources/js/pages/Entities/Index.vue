@@ -27,10 +27,9 @@ type EntityRow = {
 
     //  NOVO
     primary_contact?: null | {
-        name: string
-        role_name?: string | null
-    }
-
+        name: string;
+        role_name?: string | null;
+    };
 };
 
 type PaginationLink = {
@@ -152,16 +151,29 @@ function goType(t: string | null) {
                                 </TableCell>
 
                                 <TableCell>
-                                    <div v-if="e.primary_contact" class="leading-tight">
-                                        <div class="font-medium">{{ e.primary_contact.name }}</div>
-                                        <div class="text-xs text-muted-foreground">
-                                            {{ e.primary_contact.role_name ?? '—' }}
+                                    <div
+                                        v-if="e.primary_contact"
+                                        class="leading-tight"
+                                    >
+                                        <div class="font-medium">
+                                            {{ e.primary_contact.name }}
+                                        </div>
+                                        <div
+                                            class="text-xs text-muted-foreground"
+                                        >
+                                            {{
+                                                e.primary_contact.role_name ??
+                                                '—'
+                                            }}
                                         </div>
                                     </div>
 
-                                    <span v-else class="text-sm text-muted-foreground">—</span>
+                                    <span
+                                        v-else
+                                        class="text-sm text-muted-foreground"
+                                        >—</span
+                                    >
                                 </TableCell>
-
 
                                 <TableCell>
                                     <Badge

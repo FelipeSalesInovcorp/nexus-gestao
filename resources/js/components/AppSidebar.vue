@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import {  LayoutGrid } from 'lucide-vue-next';
+import { LayoutGrid } from 'lucide-vue-next';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -43,6 +43,10 @@ const mainNavItems: NavItem[] = [
                 title: 'Funções de Contacto',
                 href: '/config/contact-roles',
             },
+            {
+                title: 'Taxas de IVA',
+                href: '/config/tax-rates',
+            },
         ],
     },
 
@@ -50,7 +54,6 @@ const mainNavItems: NavItem[] = [
         title: 'Contactos',
         href: '/contacts',
     },
-
 ];
 
 /*const footerNavItems: NavItem[] = [

@@ -3,40 +3,32 @@
 namespace App\Actions\Contacts;
 
 use App\Models\Contact;
-use Illuminate\Http\Request;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListContactsAction
 {
-    public function execute(Request $request)
+    public function execute(array $filters): LengthAwarePaginator
     {
-        $search = $request->query('search');
-        $roleId = $request->query('role_id');
-        $onlyPrimary = $request->boolean('primary');
+        $search = $filters['search'] ?? null;
+        $roleId = $filters['contact_role_id'] ?? null;
+        $onlyPrimary = (bool)($filters['only_primary'] ?? false);
 
-        $query = Contact::query()
+        return Contact::query()
             ->with([
                 'entity:id,number,name',
                 'contactRole:id,name',
-            ]);
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
-            });
-        }
-
-        if ($roleId) {
-            $query->where('contact_role_id', $roleId);
-        }
-
-        if ($onlyPrimary) {
-            $query->where('is_primary', true);
-        }
-
-        return $query
-            ->orderByDesc('id')
+            ])
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($qq) use ($search) {
+                    $qq->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->when($roleId, fn ($q) => $q->where('contact_role_id', $roleId))
+            ->when($onlyPrimary, fn ($q) => $q->where('is_primary', true))
+            ->orderByDesc('is_primary')
+            ->orderBy('name')
             ->paginate(15)
             ->withQueryString()
             ->through(function ($c) {
@@ -46,7 +38,10 @@ class ListContactsAction
                     'email' => $c->email,
                     'phone' => $c->phone,
                     'is_primary' => (bool) $c->is_primary,
+
+                    // “Cargo” (preferir ContactRole; fallback para string antiga)
                     'role_name' => $c->contactRole?->name ?? $c->role,
+
                     'entity' => $c->entity ? [
                         'id' => $c->entity->id,
                         'number' => $c->entity->number,
