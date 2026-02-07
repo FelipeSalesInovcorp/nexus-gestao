@@ -47,6 +47,11 @@ const mainNavItems: NavItem[] = [
                 title: 'Taxas de IVA',
                 href: '/config/tax-rates',
             },
+
+            {
+                title: 'Artigos',
+                href: '/config/products',
+            },
         ],
     },
 

@@ -13,6 +13,16 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+
+            $table->string('sku')->nullable()->index();     // código interno
+            $table->string('name');                         // nome do artigo
+            $table->text('description')->nullable();
+
+            $table->decimal('price', 10, 2)->default(0);    // preço base
+            $table->foreignId('tax_rate_id')->constrained('tax_rates');
+
+            $table->boolean('active')->default(true)->index();
+
             $table->timestamps();
         });
     }
