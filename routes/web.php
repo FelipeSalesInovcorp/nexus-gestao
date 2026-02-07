@@ -8,6 +8,7 @@ use App\Http\Controllers\EntityContactController;
 use App\Http\Controllers\Config\ContactRoleController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Config\TaxRateController;
+use App\Http\Controllers\Config\ProductController;
 
 
 Route::get('/', function () {
@@ -49,6 +50,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->only(['index', 'create', 'store', 'destroy'])
         ->names('tax-rates');
 
+    // Config - Products
+    Route::resource('config/products', ProductController::class)
+    ->names('products');
+   
 });
 
 require __DIR__ . '/settings.php';
