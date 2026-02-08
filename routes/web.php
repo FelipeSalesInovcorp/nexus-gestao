@@ -9,6 +9,9 @@ use App\Http\Controllers\Config\ContactRoleController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Config\TaxRateController;
 use App\Http\Controllers\Config\ProductController;
+use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\ProposalItemController;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 Route::get('/', function () {
@@ -41,9 +44,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->names('contact-roles');
 
     // Contacts
-    Route::middleware(['auth', 'verified'])->group(function () {
+    /*Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
-    });
+    });*/
+    // contacts new
+    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+
 
     // Config - Tax Rates
     Route::resource('config/tax-rates', TaxRateController::class)
@@ -53,7 +59,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Config - Products
     Route::resource('config/products', ProductController::class)
     ->names('products');
-   
+
+    // Proposals
+    Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals.index');
+    Route::get('/proposals/create', [ProposalController::class, 'create'])->name('proposals.create');
+    Route::post('/proposals', [ProposalController::class, 'store'])->name('proposals.store');
+    Route::get('/proposals/{proposal}/edit', [ProposalController::class, 'edit'])->name('proposals.edit');
+    Route::put('/proposals/{proposal}', [ProposalController::class, 'update'])->name('proposals.update');
+    Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy'); // Soft delete
+
+    // PDF
+    Route::get('/proposals/{proposal}/pdf', [ProposalController::class, 'pdf'])->name('proposals.pdf');
+
+    // Converter em encomenda (draft)
+    Route::post('/proposals/{proposal}/convert-to-order', [ProposalController::class, 'convertToOrder'])
+        ->name('proposals.convertToOrder');
+    
 });
 
 require __DIR__ . '/settings.php';
