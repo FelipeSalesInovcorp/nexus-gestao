@@ -41,6 +41,7 @@ class ProductController
             'name' => ['required','string','max:255'],
             'description' => ['nullable','string'],
             'price' => ['required','numeric','min:0'],
+            'reference' => ['nullable', 'string', 'max:50'],
             'tax_rate_id' => ['required','exists:tax_rates,id'],
             'active' => ['boolean'],
         ]);
@@ -67,6 +68,7 @@ class ProductController
             'name' => ['required','string','max:255'],
             'description' => ['nullable','string'],
             'price' => ['required','numeric','min:0'],
+            'reference' => ['nullable', 'string', 'max:50'],
             'tax_rate_id' => ['required','exists:tax_rates,id'],
             'active' => ['boolean'],
         ]);

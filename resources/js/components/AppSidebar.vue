@@ -37,6 +37,15 @@ const mainNavItems: NavItem[] = [
         href: '/entities',
     },
     {
+        title: 'Propostas',
+        href: '/proposals',
+    },
+    {
+        title: 'Contactos',
+        href: '/contacts',
+    },
+
+    {
         title: 'Configuração',
         children: [
             {
@@ -55,10 +64,7 @@ const mainNavItems: NavItem[] = [
         ],
     },
 
-    {
-        title: 'Contactos',
-        href: '/contacts',
-    },
+    
 ];
 
 /*const footerNavItems: NavItem[] = [
