@@ -72,9 +72,15 @@ function removeProduct(id: number) {
                 </p>
             </div>
 
-            <Link href="/config/products/create">
-                <Button>Novo Artigo</Button>
-            </Link>
+            <div class="flex items-center gap-2">
+                <Link href="/config/products/create">
+                    <Button>Novo Artigo</Button>
+                </Link>
+
+                <Link href="/dashboard">
+                    <Button variant="outline">Voltar</Button>
+                </Link>
+            </div>
         </div>
 
         <Card>

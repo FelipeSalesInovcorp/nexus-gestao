@@ -28,9 +28,14 @@ function remove(id: number) {
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Funções de Contacto</h1>
 
-            <Link href="/config/contact-roles/create">
-                <Button>Nova Função</Button>
-            </Link>
+            <div class="flex items-center gap-2">
+                <Link href="/config/contact-roles/create">
+                    <Button>Nova Função</Button>
+                </Link>
+                <Link href="/dashboard">
+                    <Button variant="outline">Voltar</Button>
+                </Link>
+            </div>
         </div>
 
         <Card>

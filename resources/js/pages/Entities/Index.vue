@@ -75,23 +75,27 @@ function goType(t: string | null) {
         <div class="mb-6 flex items-center justify-between">
             <h1 class="text-3xl font-bold tracking-tight">Entidades</h1>
 
-            <Link
-                href="/entities/create"
-                class="rounded-lg bg-black px-4 py-2 text-white transition hover:opacity-90"
-            >
-                Nova Entidade
-            </Link>
-
             <!-- filtros continuam abaixo -->
-            <!--<div class="flex gap-2 mb-4">-->
-            <Button variant="outline" @click="goType('client')"
-                >Clientes</Button
-            >
-            <Button variant="outline" @click="goType('supplier')"
-                >Fornecedores</Button
-            >
-            <Button variant="outline" @click="goType(null)">Todas</Button>
-            <!--</div>-->
+            <div class="mb-4 flex gap-2">
+                <Link
+                    href="/entities/create"
+                    class="rounded-lg bg-black px-4 py-2 text-white transition hover:opacity-90"
+                >
+                    Nova Entidade
+                </Link>
+
+                <Button variant="outline" @click="goType('client')"
+                    >Clientes</Button
+                >
+                <Button variant="outline" @click="goType('supplier')"
+                    >Fornecedores</Button
+                >
+                <Button variant="outline" @click="goType(null)">Todas</Button>
+
+                <Link href="/dashboard">
+                    <Button variant="outline">Voltar</Button>
+                </Link>
+            </div>
         </div>
 
         <Card>

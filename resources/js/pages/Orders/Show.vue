@@ -37,9 +37,19 @@ function fmtDate(v: string | null | undefined) {
                 Encomenda {{ props.order.number ?? 'ENC-' + props.order.id }}
             </h1>
 
-            <Link href="/orders">
-                <Button variant="outline">Voltar</Button>
-            </Link>
+            <div class="flex items-center gap-2">
+                <a
+                    :href="`/orders/${props.order.id}/pdf`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <Button type="button" variant="outline">PDF</Button>
+                </a>
+
+                <Link href="/orders">
+                    <Button variant="outline">Voltar</Button>
+                </Link>
+            </div>
         </div>
 
         <Card>

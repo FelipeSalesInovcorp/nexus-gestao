@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 
 import { Badge } from '@/components/ui/badge';
-//import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Table,
@@ -33,12 +33,27 @@ function fmtDate(v: string | null) {
     if (!v) return '—';
     return new Date(v).toLocaleDateString('pt-PT');
 }
+
+function destroyOrder(id: number) {
+    if (!confirm('Apagar esta encomenda?')) return;
+    router.delete(`/orders/${id}`, { preserveScroll: true });
+}
 </script>
 
 <template>
     <div class="space-y-4 p-6">
         <div class="flex items-center justify-between">
             <h1 class="text-3xl font-bold tracking-tight">Encomendas</h1>
+
+            <div class="flex gap-2">
+                <Link href="/orders/create">
+                    <Button>Nova Encomenda</Button>
+                </Link>
+
+                <Link href="/dashboard">
+                    <Button variant="outline">Voltar</Button>
+                </Link>
+            </div>
         </div>
 
         <Card>
@@ -56,7 +71,7 @@ function fmtDate(v: string | null) {
                                 <TableHead>Cliente</TableHead>
                                 <TableHead class="text-right">Total</TableHead>
                                 <TableHead>Estado</TableHead>
-                                <TableHead class="text-right">Abrir</TableHead>
+                                <TableHead class="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
 
@@ -70,7 +85,7 @@ function fmtDate(v: string | null) {
                                 }}</TableCell>
 
                                 <TableCell class="font-medium">
-                                    {{ o.number ?? 'ENC-' + o.id }}
+                                    {{ o.number }}
                                 </TableCell>
 
                                 <TableCell>
@@ -97,13 +112,23 @@ function fmtDate(v: string | null) {
                                     </Badge>
                                 </TableCell>
 
-                                <TableCell class="text-right">
+                                <TableCell class="space-x-3 text-right">
                                     <Link
                                         :href="`/orders/${o.id}`"
                                         class="underline"
+                                        >Abrir</Link
                                     >
-                                        Abrir
-                                    </Link>
+                                    <Link
+                                        :href="`/orders/${o.id}/edit`"
+                                        class="underline"
+                                        >Editar</Link
+                                    >
+                                    <button
+                                        class="text-red-600 underline"
+                                        @click="destroyOrder(o.id)"
+                                    >
+                                        Apagar
+                                    </button>
                                 </TableCell>
                             </TableRow>
 

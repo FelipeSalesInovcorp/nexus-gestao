@@ -11,7 +11,6 @@ use App\Http\Controllers\Config\TaxRateController;
 use App\Http\Controllers\Config\ProductController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\ProposalItemController;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\OrderController;
 
 
@@ -69,6 +68,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/proposals/{proposal}', [ProposalController::class, 'update'])->name('proposals.update');
     Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy'); // Soft delete
 
+     // Proposal Items
+     Route::post('/proposals/{proposal}/items', [ProposalItemController::class, 'store'])->name('proposals.items.store');
+     Route::put('/proposals/{proposal}/items/{item}', [ProposalItemController::class, 'update'])->name('proposals.items.update');
+     Route::delete('/proposals/{proposal}/items/{item}', [ProposalItemController::class, 'destroy'])->name('proposals.items.destroy');
+
     // PDF
     Route::get('/proposals/{proposal}/pdf', [ProposalController::class, 'pdf'])->name('proposals.pdf');
 
@@ -78,7 +82,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    // orders - create/edit pages
+    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+
+    Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/pdf', [OrderController::class, 'pdf'])->name('orders.pdf');
     
 });
 

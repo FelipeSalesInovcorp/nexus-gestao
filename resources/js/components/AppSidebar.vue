@@ -33,6 +33,10 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'Artigos',
+        href: '/config/products',
+    },
+    {
         title: 'Entidades',
         href: '/entities',
     },
@@ -59,11 +63,6 @@ const mainNavItems: NavItem[] = [
             {
                 title: 'Taxas de IVA',
                 href: '/config/tax-rates',
-            },
-
-            {
-                title: 'Artigos',
-                href: '/config/products',
             },
         ],
     },

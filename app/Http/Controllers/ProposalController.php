@@ -124,7 +124,7 @@ class ProposalController extends Controller
 
         // cria encomenda em rascunho
         $order = Order::create([
-            'number' => null, // podes gerar depois
+            'number' => null, 
             'order_date' => now()->toDateString(),
             'status' => 'draft',
             'total' => $proposal->total ?? 0,
@@ -132,6 +132,10 @@ class ProposalController extends Controller
             'proposal_id' => $proposal->id,
 
         ]);
+
+        //  numeração automática
+        $order->number = 'ENC-' . str_pad((string) $order->id, 4, '0', STR_PAD_LEFT);
+        $order->save();
 
         foreach ($proposal->items as $it) {
             OrderItem::create([
@@ -147,7 +151,7 @@ class ProposalController extends Controller
             ]);
         }
 
-        // para demo: volta ao edit da proposta com mensagem
+        //  volta ao edit da proposta com mensagem
         /*return redirect()
             ->route('proposals.edit', $proposal)
             ->with('success', 'Proposta convertida em Encomenda (Rascunho).');*/
