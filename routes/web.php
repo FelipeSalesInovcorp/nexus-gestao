@@ -12,6 +12,7 @@ use App\Http\Controllers\Config\ProductController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\ProposalItemController;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\OrderController;
 
 
 Route::get('/', function () {
@@ -74,6 +75,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Converter em encomenda (draft)
     Route::post('/proposals/{proposal}/convert-to-order', [ProposalController::class, 'convertToOrder'])
         ->name('proposals.convertToOrder');
+
+    // orders
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     
 });
 

@@ -44,6 +44,10 @@ const mainNavItems: NavItem[] = [
         title: 'Contactos',
         href: '/contacts',
     },
+    {
+        title: 'Encomendas',
+        href: '/orders',
+    },
 
     {
         title: 'Configuração',
@@ -63,8 +67,6 @@ const mainNavItems: NavItem[] = [
             },
         ],
     },
-
-    
 ];
 
 /*const footerNavItems: NavItem[] = [

@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->string('number')->nullable();
+            $table->date('order_date')->nullable();
+            $table->string('status')->default('draft'); // draft | closed
+            $table->decimal('total', 12, 2)->default(0);
+
+            $table->foreignId('entity_id')->constrained('entities'); // cliente
+            $table->foreignId('proposal_id')->nullable()->constrained('proposals')->nullOnDelete();
+
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('orders');
+    }
+};
