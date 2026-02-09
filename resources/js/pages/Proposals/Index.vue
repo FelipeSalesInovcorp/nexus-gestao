@@ -40,9 +40,15 @@ function destroyProposal(id: number) {
         <div class="flex items-center justify-between">
             <h1 class="text-3xl font-bold tracking-tight">Propostas</h1>
 
-            <Link href="/proposals/create">
-                <Button>Nova Proposta</Button>
-            </Link>
+            <div class="flex items-center gap-2">
+                <Link href="/proposals/create">
+                    <Button>Nova Proposta</Button>
+                </Link>
+
+                <Link href="/dashboard">
+                    <Button variant="outline">Voltar</Button>
+                </Link>
+            </div>
         </div>
 
         <Card>
