@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Actions\Proposals\CreateProposalAction;
 use App\Actions\Proposals\ListProposalsAction;
 use App\Actions\Proposals\UpdateProposalAction;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Entity;
 use App\Models\Product;
 use App\Models\Proposal;
 use App\Models\TaxRate;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Order;
+use App\Models\OrderItem;
+
 
 class ProposalController extends Controller
 {
@@ -112,6 +115,45 @@ class ProposalController extends Controller
         $filename = ($proposal->number ?: 'PROPOSTA-' . $proposal->id) . '.pdf';
 
         return $pdf->download($filename);
+    }
+
+    // Convert to Order
+    public function convertToOrder(Proposal $proposal)
+    {
+        $proposal->load(['items']);
+
+        // cria encomenda em rascunho
+        $order = Order::create([
+            'number' => null, // podes gerar depois
+            'order_date' => now()->toDateString(),
+            'status' => 'draft',
+            'total' => $proposal->total ?? 0,
+            'entity_id' => $proposal->entity_id,
+            'proposal_id' => $proposal->id,
+
+        ]);
+
+        foreach ($proposal->items as $it) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $it->product_id,
+                'supplier_id' => $it->supplier_id,
+                'tax_rate_id' => $it->tax_rate_id,
+                'description' => $it->description,
+                'qty' => $it->qty,
+                'unit_price' => $it->unit_price,
+                'tax_rate' => $it->tax_rate,
+                'cost_price' => $it->cost_price,
+            ]);
+        }
+
+        // para demo: volta ao edit da proposta com mensagem
+        /*return redirect()
+            ->route('proposals.edit', $proposal)
+            ->with('success', 'Proposta convertida em Encomenda (Rascunho).');*/
+
+        // redireciona para a encomenda
+        return redirect()->route('orders.show', $order);
     }
 }
 
