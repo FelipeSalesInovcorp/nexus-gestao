@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Link } from '@inertiajs/vue3';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 defineProps<{
-    canRegister?: boolean
-}>()
+    canRegister?: boolean;
+}>();
 </script>
 
 <template>
     <div class="min-h-screen bg-background">
         <!-- Top bar -->
-        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+        <div
+            class="mx-auto flex max-w-6xl items-center justify-between px-6 py-6"
+        >
             <div class="text-lg font-semibold">Nexus Gestão</div>
 
             <div class="flex items-center gap-3">
@@ -24,16 +26,18 @@ defineProps<{
         </div>
 
         <!-- Hero -->
-        <div class="mx-auto max-w-6xl px-6 pb-14 pt-6">
+        <div class="mx-auto max-w-6xl px-6 pt-6 pb-14">
             <div class="grid gap-6 md:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-2xl">Gestão comercial simples e eficiente</CardTitle>
+                        <CardTitle class="text-2xl"
+                            >Gestão comercial simples e eficiente</CardTitle
+                        >
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <p class="text-sm text-muted-foreground">
-                            Gestão de clientes, artigos, propostas e encomendas com exportação para PDF e conversão
-                            automática.
+                            Gestão de clientes, artigos, propostas e encomendas
+                            com exportação para PDF e conversão automática.
                         </p>
 
                         <div class="flex flex-wrap gap-2">
@@ -58,7 +62,8 @@ defineProps<{
                             <CardTitle>Propostas</CardTitle>
                         </CardHeader>
                         <CardContent class="text-sm text-muted-foreground">
-                            Linhas com auto-preenchimento, cálculos de IVA e PDF.
+                            Linhas com auto-preenchimento, cálculos de IVA e
+                            PDF.
                         </CardContent>
                     </Card>
 
@@ -67,7 +72,8 @@ defineProps<{
                             <CardTitle>Encomendas</CardTitle>
                         </CardHeader>
                         <CardContent class="text-sm text-muted-foreground">
-                            Criar encomendas ou converter propostas em 1 clique (ENC-000X).
+                            Criar encomendas ou converter propostas em 1 clique
+                            (ENC-000X).
                         </CardContent>
                     </Card>
 
@@ -84,4 +90,3 @@ defineProps<{
         </div>
     </div>
 </template>
-

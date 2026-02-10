@@ -68,12 +68,15 @@ function clearFilters() {
     roleId.value = '';
     onlyPrimary.value = false;
 
-    router.get('/contacts', {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/contacts',
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 }
-
 </script>
 
 <template>
@@ -134,10 +137,13 @@ function clearFilters() {
                             >Aplicar</Button
                         >
 
-                        <Button v-if="search || roleId || onlyPrimary" variant="ghost" @click="clearFilters">
+                        <Button
+                            v-if="search || roleId || onlyPrimary"
+                            variant="ghost"
+                            @click="clearFilters"
+                        >
                             Limpar
                         </Button>
-
                     </div>
                 </div>
 
@@ -165,7 +171,11 @@ function clearFilters() {
                                 <TableCell class="font-medium">
                                     <div class="flex items-center gap-2">
                                         <span>{{ c.name }}</span>
-                                        <Badge v-if="c.is_primary" variant="default">Principal</Badge>
+                                        <Badge
+                                            v-if="c.is_primary"
+                                            variant="default"
+                                            >Principal</Badge
+                                        >
                                     </div>
                                 </TableCell>
 
@@ -177,7 +187,9 @@ function clearFilters() {
                                         <div class="text-sm font-medium">
                                             {{ c.entity.name }}
                                         </div>
-                                        <div class="text-xs text-muted-foreground">
+                                        <div
+                                            class="text-xs text-muted-foreground"
+                                        >
                                             Nº {{ c.entity.number }}
                                         </div>
                                     </div>
@@ -188,8 +200,18 @@ function clearFilters() {
                                 <TableCell>{{ c.mobile ?? '—' }}</TableCell>
                                 <TableCell>{{ c.email ?? '—' }}</TableCell>
                                 <TableCell>
-                                    <Badge :variant="c.active === false ? 'secondary' : 'default'">
-                                        {{ c.active === false ? 'Inativo' : 'Ativo' }}
+                                    <Badge
+                                        :variant="
+                                            c.active === false
+                                                ? 'secondary'
+                                                : 'default'
+                                        "
+                                    >
+                                        {{
+                                            c.active === false
+                                                ? 'Inativo'
+                                                : 'Ativo'
+                                        }}
                                     </Badge>
                                 </TableCell>
 

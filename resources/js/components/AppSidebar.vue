@@ -33,6 +33,14 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'Clientes',
+        href: '/entities?type=client',
+    },
+    {
+        title: 'Fornecedores',
+        href: '/entities?type=supplier',
+    },
+    {
         title: 'Artigos',
         href: '/config/products',
     },
@@ -56,6 +64,10 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Configuração',
         children: [
+            {
+                title: 'Empresa',
+                href: '/config/company',
+            },
             {
                 title: 'Funções de Contacto',
                 href: '/config/contact-roles',

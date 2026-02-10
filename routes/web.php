@@ -9,6 +9,7 @@ use App\Http\Controllers\Config\ContactRoleController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Config\TaxRateController;
 use App\Http\Controllers\Config\ProductController;
+use App\Http\Controllers\Config\CompanyController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\ProposalItemController;
 use App\Http\Controllers\OrderController;
@@ -19,6 +20,9 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
+// Logo da empresa (armazenado fora de public_html)
+Route::get('/company/logo', [CompanyController::class, 'logo'])->name('company.logo');
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
@@ -59,6 +63,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Config - Products
     Route::resource('config/products', ProductController::class)
     ->names('products');
+
+    // Config - Empresa
+    Route::get('/config/company', [CompanyController::class, 'edit'])->name('config.company.edit');
+    Route::put('/config/company', [CompanyController::class, 'update'])->name('config.company.update');
+
+    // Config - Empresa (single record)
+    Route::get('/config/company', [CompanyController::class, 'edit'])->name('config.company.edit');
+    Route::put('/config/company', [CompanyController::class, 'update'])->name('config.company.update');
 
     // Proposals
     Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals.index');
