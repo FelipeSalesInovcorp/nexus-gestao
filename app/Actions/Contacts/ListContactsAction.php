@@ -21,8 +21,10 @@ class ListContactsAction
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($qq) use ($search) {
                     $qq->where('name', 'like', "%{$search}%")
+                        ->orWhere('surname', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('mobile', 'like', "%{$search}%");
                 });
             })
             ->when($roleId, fn ($q) => $q->where('contact_role_id', $roleId))
@@ -34,10 +36,14 @@ class ListContactsAction
             ->through(function ($c) {
                 return [
                     'id' => $c->id,
+                    'number' => $c->number,
                     'name' => $c->name,
+                    'surname' => $c->surname,
                     'email' => $c->email,
                     'phone' => $c->phone,
+                    'mobile' => $c->mobile,
                     'is_primary' => (bool) $c->is_primary,
+                    'active' => (bool) $c->active,
 
                     // “Cargo” (preferir ContactRole; fallback para string antiga)
                     'role_name' => $c->contactRole?->name ?? $c->role,

@@ -78,7 +78,7 @@ function goType(t: string | null) {
             <!-- filtros continuam abaixo -->
             <div class="mb-4 flex gap-2">
                 <Link
-                    href="/entities/create"
+                    :href="props.type ? `/entities/create?type=${props.type}` : '/entities/create'"
                     class="rounded-lg bg-black px-4 py-2 text-white transition hover:opacity-90"
                 >
                     Nova Entidade

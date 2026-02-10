@@ -19,10 +19,14 @@ type Role = { id: number; name: string };
 
 type ContactRow = {
     id: number;
+    number?: number | null;
     name: string;
+    surname?: string | null;
     email?: string | null;
     phone?: string | null;
+    mobile?: string | null;
     is_primary: boolean;
+    active?: boolean;
     role_name?: string | null;
     entity?: {
         id: number;
@@ -58,6 +62,18 @@ function applyFilters() {
         { preserveState: true, preserveScroll: true },
     );
 }
+
+function clearFilters() {
+    search.value = '';
+    roleId.value = '';
+    onlyPrimary.value = false;
+
+    router.get('/contacts', {}, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+}
+
 </script>
 
 <template>
@@ -86,7 +102,7 @@ function applyFilters() {
                         <div class="text-sm font-medium">Pesquisa</div>
                         <Input
                             v-model="search"
-                            placeholder="Nome, email ou telefone"
+                            placeholder="Nome, apelido, email, telefone ou telemóvel"
                             @keyup.enter="applyFilters"
                         />
                     </div>
@@ -117,6 +133,11 @@ function applyFilters() {
                         <Button variant="outline" @click="applyFilters"
                             >Aplicar</Button
                         >
+
+                        <Button v-if="search || roleId || onlyPrimary" variant="ghost" @click="clearFilters">
+                            Limpar
+                        </Button>
+
                     </div>
                 </div>
 
@@ -125,11 +146,13 @@ function applyFilters() {
                         <TableHeader class="bg-gray-100 dark:bg-gray-800">
                             <TableRow>
                                 <TableHead>Nome</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Telefone</TableHead>
-                                <TableHead>Cargo</TableHead>
-                                <TableHead>Principal</TableHead>
+                                <TableHead>Apelido</TableHead>
+                                <TableHead>Função</TableHead>
                                 <TableHead>Entidade</TableHead>
+                                <TableHead>Telefone</TableHead>
+                                <TableHead>Telemóvel</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Estado</TableHead>
                                 <TableHead class="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -139,37 +162,35 @@ function applyFilters() {
                                 v-for="c in props.contacts.data"
                                 :key="c.id"
                             >
-                                <TableCell class="font-medium">{{
-                                    c.name
-                                }}</TableCell>
-                                <TableCell>{{ c.email ?? '—' }}</TableCell>
-                                <TableCell>{{ c.phone ?? '—' }}</TableCell>
-                                <TableCell>{{ c.role_name ?? '—' }}</TableCell>
-
-                                <TableCell>
-                                    <Badge
-                                        :variant="
-                                            c.is_primary
-                                                ? 'default'
-                                                : 'secondary'
-                                        "
-                                    >
-                                        {{ c.is_primary ? 'Sim' : 'Não' }}
-                                    </Badge>
+                                <TableCell class="font-medium">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ c.name }}</span>
+                                        <Badge v-if="c.is_primary" variant="default">Principal</Badge>
+                                    </div>
                                 </TableCell>
+
+                                <TableCell>{{ c.surname ?? '—' }}</TableCell>
+                                <TableCell>{{ c.role_name ?? '—' }}</TableCell>
 
                                 <TableCell>
                                     <div v-if="c.entity">
                                         <div class="text-sm font-medium">
                                             {{ c.entity.name }}
                                         </div>
-                                        <div
-                                            class="text-xs text-muted-foreground"
-                                        >
+                                        <div class="text-xs text-muted-foreground">
                                             Nº {{ c.entity.number }}
                                         </div>
                                     </div>
                                     <span v-else>—</span>
+                                </TableCell>
+
+                                <TableCell>{{ c.phone ?? '—' }}</TableCell>
+                                <TableCell>{{ c.mobile ?? '—' }}</TableCell>
+                                <TableCell>{{ c.email ?? '—' }}</TableCell>
+                                <TableCell>
+                                    <Badge :variant="c.active === false ? 'secondary' : 'default'">
+                                        {{ c.active === false ? 'Inativo' : 'Ativo' }}
+                                    </Badge>
                                 </TableCell>
 
                                 <TableCell class="text-right">
@@ -185,7 +206,7 @@ function applyFilters() {
 
                             <TableRow v-if="props.contacts.data.length === 0">
                                 <TableCell
-                                    colspan="7"
+                                    colspan="9"
                                     class="py-8 text-center text-muted-foreground"
                                 >
                                     Nenhum contacto encontrado.

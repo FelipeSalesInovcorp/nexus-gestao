@@ -13,12 +13,18 @@ class EntityContactController extends Controller
     public function store(Request $request, Entity $entity, CreateContactAction $action)
     {
         $data = $request->validate([
+            'number' => ['nullable', 'integer', 'min:1'],
             'name' => ['required', 'string', 'max:255'],
+            'surname' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'mobile' => ['nullable', 'string', 'max:50'],
             //'role' => ['nullable', 'string', 'max:100'],
             'contact_role_id' => ['nullable', 'exists:contact_roles,id'],
             'is_primary' => ['sometimes','boolean'],
+            'rgpd_consent' => ['sometimes', 'boolean'],
+            'notes' => ['nullable', 'string'],
+            'active' => ['sometimes', 'boolean'],
         ]);
 
         $action->execute($entity, $data);

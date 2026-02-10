@@ -39,11 +39,16 @@ function submit() {
  */
 const contactForm = useForm({
     name: '',
+    surname: '',
     email: '',
     phone: '',
+    mobile: '',
     role: '', //  fallback
     contact_role_id: null as number | null,
     is_primary: false,
+    rgpd_consent: false,
+    notes: '',
+    active: true,
 });
 
 function addContact() {
@@ -248,6 +253,7 @@ function removeContact(contactId: number) {
                         <div>
                             <div class="font-medium">
                                 {{ c.name }}
+                                <span v-if="c.surname"> {{ c.surname }}</span>
                                 <span
                                     v-if="c.is_primary"
                                     class="ml-2 rounded border px-2 py-1 text-xs"
@@ -269,6 +275,8 @@ function removeContact(contactId: number) {
                                 <span v-else-if="c.role">{{ c.role }} · </span>
                                 <span v-if="c.email">{{ c.email }} · </span>
                                 <span v-if="c.phone">{{ c.phone }}</span>
+                                <span v-if="c.mobile"> · {{ c.mobile }}</span>
+                                <span v-if="c.active === false" class="ml-2">(Inativo)</span>
                             </div>
                         </div>
 
@@ -284,7 +292,7 @@ function removeContact(contactId: number) {
 
                 <!-- Form adicionar -->
                 <div class="space-y-3 rounded-md border p-4">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-4">
                         <div class="space-y-2">
                             <Label>Nome *</Label>
                             <Input v-model="contactForm.name" />
@@ -294,6 +302,11 @@ function removeContact(contactId: number) {
                             >
                                 {{ contactForm.errors.name }}
                             </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label>Apelido</Label>
+                            <Input v-model="contactForm.surname" />
                         </div>
 
                         <!--<div class="space-y-2">
@@ -331,7 +344,7 @@ function removeContact(contactId: number) {
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-4">
                         <div class="space-y-2">
                             <Label>Email</Label>
                             <Input v-model="contactForm.email" />
@@ -347,6 +360,11 @@ function removeContact(contactId: number) {
                             <Label>Telefone</Label>
                             <Input v-model="contactForm.phone" />
                         </div>
+
+                        <div class="space-y-2">
+                            <Label>Telemóvel</Label>
+                            <Input v-model="contactForm.mobile" />
+                        </div>
                     </div>
 
                     <label class="flex items-center gap-2">
@@ -356,6 +374,27 @@ function removeContact(contactId: number) {
                         />
                         Contacto principal
                     </label>
+
+                    <div class="flex flex-wrap gap-6">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="contactForm.rgpd_consent" />
+                            Consentimento RGPD
+                        </label>
+
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="contactForm.active" />
+                            Ativo
+                        </label>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label>Observações</Label>
+                        <textarea
+                            rows="2"
+                            v-model="contactForm.notes"
+                            class="w-full rounded-md border px-3 py-2"
+                        />
+                    </div>
 
                     <Button
                         type="button"
