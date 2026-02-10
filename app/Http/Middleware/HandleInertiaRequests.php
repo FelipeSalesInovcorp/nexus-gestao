@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\CompanySetting;
+use Illuminate\Support\Facades\Schema;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -38,6 +40,23 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'company' => function () {
+                // Evita erros em ambientes onde a migration ainda não foi corrida
+                if (!Schema::hasTable('company_settings')) {
+                    return null;
+                }
+
+                $company = CompanySetting::query()->first();
+
+                if (!$company) {
+                    return null;
+                }
+
+                return [
+                    'name' => $company->name,
+                    'logo_url' => $company->logo_path ? route('company.logo') : null,
+                ];
+            },
             'auth' => [
                 'user' => $request->user(),
             ],

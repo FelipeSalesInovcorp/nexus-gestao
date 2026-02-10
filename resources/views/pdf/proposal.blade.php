@@ -43,6 +43,40 @@
 </head>
 
 <body>
+    @php
+        $logoFile = null;
+        if (!empty($companyLogoPath)) {
+            $candidate = storage_path('app/private/' . $companyLogoPath);
+            if (file_exists($candidate)) {
+                $logoFile = $candidate;
+            }
+        }
+    @endphp
+
+    <table style="width:100%; border:none; margin-bottom:12px;">
+        <tr>
+            <td style="border:none; width:80px; vertical-align:top;">
+                @if($logoFile)
+                    <img src="{{ $logoFile }}" alt="Logo" style="width:70px; height:70px; object-fit:contain;" />
+                @endif
+            </td>
+            <td style="border:none; vertical-align:top;">
+                <div style="font-size:16px; font-weight:bold;">
+                    {{ $company?->name ?? config('app.name') }}
+                </div>
+                <div class="muted">
+                    {{ $company?->address ?? '' }}
+                    @if($company?->postal_code || $company?->locality)
+                        <br>{{ trim(($company?->postal_code ?? '') . ' ' . ($company?->locality ?? '')) }}
+                    @endif
+                    @if($company?->tax_number)
+                        <br>NIF: {{ $company->tax_number }}
+                    @endif
+                </div>
+            </td>
+        </tr>
+    </table>
+
     <h1>Proposta {{ $proposal->number ?? ('#' . $proposal->id) }}</h1>
 
     <div class="muted">
