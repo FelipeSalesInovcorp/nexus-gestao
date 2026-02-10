@@ -10,7 +10,9 @@ defineProps<{
 }>();
 
 const page = usePage();
-const companyName = computed(() => (page.props.company as any)?.name ?? (page.props.name as any) ?? '');
+const companyName = computed(
+    () => (page.props.company as any)?.name ?? (page.props.name as any) ?? '',
+);
 const logoUrl = computed(() => (page.props.company as any)?.logo_url ?? null);
 </script>
 
@@ -32,7 +34,7 @@ const logoUrl = computed(() => (page.props.company as any)?.logo_url ?? null);
                                 v-if="logoUrl"
                                 :src="logoUrl"
                                 alt="Logo"
-                                class="h-9 w-9 rounded-md object-contain bg-white"
+                                class="h-9 w-9 rounded-md bg-white object-contain"
                             />
                             <AppLogoIcon
                                 v-else

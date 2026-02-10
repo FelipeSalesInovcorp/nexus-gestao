@@ -276,7 +276,9 @@ function removeContact(contactId: number) {
                                 <span v-if="c.email">{{ c.email }} · </span>
                                 <span v-if="c.phone">{{ c.phone }}</span>
                                 <span v-if="c.mobile"> · {{ c.mobile }}</span>
-                                <span v-if="c.active === false" class="ml-2">(Inativo)</span>
+                                <span v-if="c.active === false" class="ml-2"
+                                    >(Inativo)</span
+                                >
                             </div>
                         </div>
 
@@ -377,12 +379,18 @@ function removeContact(contactId: number) {
 
                     <div class="flex flex-wrap gap-6">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" v-model="contactForm.rgpd_consent" />
+                            <input
+                                type="checkbox"
+                                v-model="contactForm.rgpd_consent"
+                            />
                             Consentimento RGPD
                         </label>
 
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" v-model="contactForm.active" />
+                            <input
+                                type="checkbox"
+                                v-model="contactForm.active"
+                            />
                             Ativo
                         </label>
                     </div>

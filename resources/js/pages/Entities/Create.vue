@@ -40,7 +40,11 @@ function submit() {
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Criar Entidade</h1>
 
-            <Link :href="props.type ? `/entities?type=${props.type}` : '/entities'">
+            <Link
+                :href="
+                    props.type ? `/entities?type=${props.type}` : '/entities'
+                "
+            >
                 <Button variant="outline">Voltar</Button>
             </Link>
         </div>
