@@ -10,14 +10,25 @@ class Contact extends Model
     use HasFactory;
 
     protected $fillable = [
+        'number',
         'entity_id',
         'contact_role_id',
         'name',
+        'surname',
         'email',
         'phone',
+        'mobile',
         'role',        // podes manter por compatibilidade
-        'contact_role_id',
         'is_primary',
+        'rgpd_consent',
+        'notes',
+        'active',
+    ];
+
+    protected $casts = [
+        'is_primary' => 'boolean',
+        'rgpd_consent' => 'boolean',
+        'active' => 'boolean',
     ];
 
     public function entity()

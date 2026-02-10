@@ -6,13 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-defineProps({
-    countries: Array,
-});
+const props = defineProps<{
+    countries: Array<any>;
+    type?: 'client' | 'supplier' | null;
+}>();
 
 const form = useForm({
-    is_client: true,
-    is_supplier: false,
+    // Pré-seleção conforme menu (Clientes/Fornecedores)
+    is_client: props.type === 'supplier' ? false : true,
+    is_supplier: props.type === 'supplier' ? true : false,
     name: '',
     nif: '',
     address: '',
@@ -38,7 +40,7 @@ function submit() {
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Criar Entidade</h1>
 
-            <Link href="/entities">
+            <Link :href="props.type ? `/entities?type=${props.type}` : '/entities'">
                 <Button variant="outline">Voltar</Button>
             </Link>
         </div>
