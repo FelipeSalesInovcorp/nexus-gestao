@@ -31,7 +31,7 @@ function onLogoChange(e) {
 }
 
 function submit() {
-    console.log('submit called'); // <- para confirmar no console
+    console.log('submit called');
 
     form.put('/config/company', {
         forceFormData: true,

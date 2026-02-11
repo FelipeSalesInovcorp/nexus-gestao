@@ -51,6 +51,10 @@
 
 <body>
     @php
+
+        $company = $order->company;
+        $companyLogoPath = $company?->settings()->where('key', 'logo')->value('value');
+        
         $logoFile = null;
         if (!empty($companyLogoPath)) {
             $candidate = storage_path('app/private/' . $companyLogoPath);

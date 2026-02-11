@@ -14,6 +14,7 @@ use App\Models\Proposal;
 use App\Models\TaxRate;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\CompanySetting;
 
 
 class ProposalController extends Controller
@@ -98,6 +99,7 @@ class ProposalController extends Controller
         return redirect()->route('proposals.index');
     }
     
+
     // Generate PDF
     public function pdf(Proposal $proposal)
     {
@@ -108,14 +110,19 @@ class ProposalController extends Controller
             'items.taxRate',
         ]);
 
+        // ✅ Buscar e passar a empresa para a view do PDF
+        $company = CompanySetting::query()->first();
+
         $pdf = Pdf::loadView('pdf.proposal', [
             'proposal' => $proposal,
+            'company' => $company,
         ]);
 
         $filename = ($proposal->number ?: 'PROPOSTA-' . $proposal->id) . '.pdf';
 
         return $pdf->download($filename);
     }
+
 
     // Convert to Order
     public function convertToOrder(Proposal $proposal)

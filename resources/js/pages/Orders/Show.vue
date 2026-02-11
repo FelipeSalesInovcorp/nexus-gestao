@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,7 @@ type OrderItem = {
     qty: number | string;
     unit_price: number | string;
     tax_rate: number | string;
+    supplier_id?: number | null;
 };
 
 const props = defineProps<{
@@ -28,6 +30,18 @@ function fmtDate(v: string | null | undefined) {
     if (!v) return '—';
     return new Date(v).toLocaleDateString('pt-PT');
 }
+
+function convertSuppliers() {
+    router.post(
+        `/orders/${props.order.id}/convert-suppliers`,
+        {},
+        { preserveScroll: true },
+    );
+}
+
+const hasSuppliers = computed(() =>
+    (props.order.items ?? []).some((it: any) => !!it.supplier_id),
+);
 </script>
 
 <template>
@@ -38,6 +52,14 @@ function fmtDate(v: string | null | undefined) {
             </h1>
 
             <div class="flex items-center gap-2">
+                <Button
+                    v-if="props.order.status === 'closed' && hasSuppliers"
+                    type="button"
+                    @click="convertSuppliers"
+                >
+                    Converter para Fornecedores
+                </Button>
+
                 <a
                     :href="`/orders/${props.order.id}/pdf`"
                     target="_blank"

@@ -102,6 +102,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
+    Route::post('/orders/{order}/convert-suppliers', [OrderController::class, 'convertToSupplierOrders'])
+    ->name('orders.convert-suppliers');
+
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/pdf', [OrderController::class, 'pdf'])->name('orders.pdf');
     
