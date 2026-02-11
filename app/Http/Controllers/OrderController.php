@@ -8,6 +8,8 @@ use App\Models\Entity;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\TaxRate;
+use App\Models\CompanySetting;
+use App\Actions\SupplierOrders\ConvertOrderToSupplierOrdersAction;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -86,10 +88,14 @@ class OrderController extends Controller
 
     public function pdf(Order $order)
     {
-        $order->load(['entity', 'items']);
+        $order->load(['entity', 'items.product']);
+
+        // ✅ Buscar e passar a empresa para a view do PDF
+        $company = CompanySetting::query()->first();
 
         $pdf = Pdf::loadView('pdf.order', [
             'order' => $order,
+            'company' => $company,
         ]);
 
         $filename = ($order->number ?: ('ENC-' . $order->id)) . '.pdf';
@@ -99,9 +105,7 @@ class OrderController extends Controller
             ->header('Content-Disposition', "inline; filename=\"{$filename}\"");
     }
 
-    /**
-     * Dependências do formulário (Create/Edit)
-     */
+    // Dependências do formulário (Create/Edit)
     private function formDeps(): array
     {
         return [
@@ -124,10 +128,8 @@ class OrderController extends Controller
                 ->get(['id', 'name', 'rate']),
         ];
     }
-
-    /**
-     * Validação centralizada (Create/Update)
-     */
+    
+      //Validação centralizada (Create/Update)
     private function validatedData(Request $request): array
     {
         return $request->validate([
@@ -146,4 +148,17 @@ class OrderController extends Controller
             'items.*.cost_price' => ['nullable'],
         ]);
     }
+
+    public function convertToSupplierOrders(Order $order, ConvertOrderToSupplierOrdersAction $action)
+    {
+        // opcional: só permitir se estiver fechada
+        if (($order->status ?? null) !== 'closed') {
+            return back()->with('error', 'A encomenda deve estar fechada antes de converter.');
+        }
+
+        $action->execute($order);
+
+        return back()->with('success', 'Encomendas de fornecedor criadas com sucesso!');
+    }
+
 }
