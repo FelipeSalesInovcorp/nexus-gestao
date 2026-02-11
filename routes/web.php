@@ -13,6 +13,7 @@ use App\Http\Controllers\Config\CompanyController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\ProposalItemController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\SupplierOrderController;
 
 
 Route::get('/', function () {
@@ -80,10 +81,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/proposals/{proposal}', [ProposalController::class, 'update'])->name('proposals.update');
     Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy'); // Soft delete
 
-     // Proposal Items
-     Route::post('/proposals/{proposal}/items', [ProposalItemController::class, 'store'])->name('proposals.items.store');
-     Route::put('/proposals/{proposal}/items/{item}', [ProposalItemController::class, 'update'])->name('proposals.items.update');
-     Route::delete('/proposals/{proposal}/items/{item}', [ProposalItemController::class, 'destroy'])->name('proposals.items.destroy');
+    Route::get('/proposals/{proposal}', [ProposalController::class, 'show'])->name('proposals.show');
 
     // PDF
     Route::get('/proposals/{proposal}/pdf', [ProposalController::class, 'pdf'])->name('proposals.pdf');
@@ -107,6 +105,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/pdf', [OrderController::class, 'pdf'])->name('orders.pdf');
+
+    // Supplier Orders
+    Route::prefix('supplier-orders')->group(function () {
+
+        Route::get('/', [SupplierOrderController::class, 'index'])
+            ->name('supplier-orders.index');
+
+        Route::get('/{supplierOrder}', [SupplierOrderController::class, 'show'])
+            ->name('supplier-orders.show');
+
+        Route::get('/{supplierOrder}/pdf', [SupplierOrderController::class, 'pdf'])
+            ->name('supplier-orders.pdf');
+    });
     
 });
 

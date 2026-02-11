@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Entity;
+use App\Models\Order;
+
 
 class SupplierOrder extends Model
 {
@@ -32,6 +35,6 @@ class SupplierOrder extends Model
 
     public function items()
     {
-        return $this->hasMany(SupplierOrderItem::class);
+        return $this->hasMany(\App\Models\SupplierOrderItem::class);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Product;
 
 class SupplierOrderItem extends Model
 {
@@ -21,5 +23,10 @@ class SupplierOrderItem extends Model
     public function supplierOrder()
     {
         return $this->belongsTo(SupplierOrder::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 }

@@ -1,6 +1,20 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { LayoutGrid } from 'lucide-vue-next';
+import {
+    LayoutGrid,
+    Users,
+    UserCog,
+    Package,
+    Building2,
+    FileText,
+    Phone,
+    ShoppingCart,
+    Truck,
+    Settings,
+    Factory,
+    Percent,
+} from 'lucide-vue-next';
+
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -35,46 +49,62 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Clientes',
         href: '/entities?type=client',
+        icon: Users,
     },
     {
         title: 'Fornecedores',
         href: '/entities?type=supplier',
+        icon: Factory,
     },
     {
         title: 'Artigos',
         href: '/config/products',
+        icon: Package,
     },
     {
         title: 'Entidades',
         href: '/entities',
+        icon: Building2,
     },
     {
         title: 'Propostas',
         href: '/proposals',
+        icon: FileText,
     },
     {
         title: 'Contactos',
         href: '/contacts',
+        icon: Phone,
     },
     {
         title: 'Encomendas',
         href: '/orders',
+        icon: ShoppingCart,
+    },
+    {
+        title: 'Encomendas a fornecedores',
+        href: '/supplier-orders',
+        icon: Truck,
     },
 
     {
         title: 'Configuração',
+        icon: Settings,
         children: [
             {
                 title: 'Empresa',
                 href: '/config/company',
+                icon: Building2,
             },
             {
                 title: 'Funções de Contacto',
                 href: '/config/contact-roles',
+                icon: UserCog,
             },
             {
                 title: 'Taxas de IVA',
                 href: '/config/tax-rates',
+                icon: Percent,  
             },
         ],
     },
