@@ -86,6 +86,11 @@ const mainNavItems: NavItem[] = [
         href: '/supplier-orders',
         icon: Truck,
     },
+    {
+        title: 'Financeiro',
+        href: '/finance/supplier-invoices',
+        icon: UserCog,
+    },
 
     {
         title: 'Configuração',
@@ -104,7 +109,7 @@ const mainNavItems: NavItem[] = [
             {
                 title: 'Taxas de IVA',
                 href: '/config/tax-rates',
-                icon: Percent,  
+                icon: Percent,
             },
         ],
     },
