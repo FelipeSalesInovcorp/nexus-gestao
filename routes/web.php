@@ -14,6 +14,8 @@ use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\ProposalItemController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SupplierOrderController;
+use App\Http\Controllers\SupplierInvoiceController;
+
 
 
 Route::get('/', function () {
@@ -65,9 +67,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('config/products', ProductController::class)
     ->names('products');
 
-    // Config - Empresa
+    /*Config - Empresa
     Route::get('/config/company', [CompanyController::class, 'edit'])->name('config.company.edit');
-    Route::put('/config/company', [CompanyController::class, 'update'])->name('config.company.update');
+    Route::put('/config/company', [CompanyController::class, 'update'])->name('config.company.update');*/
 
     // Config - Empresa (single record)
     Route::get('/config/company', [CompanyController::class, 'edit'])->name('config.company.edit');
@@ -118,7 +120,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{supplierOrder}/pdf', [SupplierOrderController::class, 'pdf'])
             ->name('supplier-orders.pdf');
     });
-    
+
+    // Finance - Supplier Invoices
+    Route::prefix('finance')->group(function () {
+        Route::get('/supplier-invoices', [SupplierInvoiceController::class, 'index'])
+            ->name('supplier-invoices.index');
+
+        Route::get('/supplier-invoices/create', [SupplierInvoiceController::class, 'create'])
+            ->name('supplier-invoices.create');
+
+        Route::post('/supplier-invoices', [SupplierInvoiceController::class, 'store'])
+            ->name('supplier-invoices.store');
+
+        Route::get('/supplier-invoices/{supplierInvoice}', [SupplierInvoiceController::class, 'show'])
+            ->name('supplier-invoices.show');
+
+        Route::get('/supplier-invoices/{supplierInvoice}/edit', [SupplierInvoiceController::class, 'edit'])
+            ->name('supplier-invoices.edit');
+
+        Route::put('/supplier-invoices/{supplierInvoice}', [SupplierInvoiceController::class, 'update'])
+            ->name('supplier-invoices.update');
+
+        // Endpoint 1: marcar como paga (SEM comprovativo / SEM email)
+        Route::post('/supplier-invoices/{supplierInvoice}/mark-paid', [SupplierInvoiceController::class, 'markPaid'])
+            ->name('supplier-invoices.markPaid');
+
+        // Endpoint 2: marcar como paga COM comprovativo (+ email opcional)
+        Route::post('/supplier-invoices/{supplierInvoice}/mark-paid-with-proof', [SupplierInvoiceController::class, 'markPaidWithProof'])
+            ->name('supplier-invoices.markPaidWithProof');
+
+        Route::get('/supplier-invoices/{supplierInvoice}/download', [SupplierInvoiceController::class, 'download'])
+            ->name('supplier-invoices.download');
+
+        Route::get('/supplier-invoices/{supplierInvoice}/download-proof', [SupplierInvoiceController::class, 'downloadProof'])
+            ->name('supplier-invoices.downloadProof');
+    });
 });
 
 require __DIR__ . '/settings.php';
