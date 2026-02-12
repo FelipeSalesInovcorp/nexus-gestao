@@ -113,6 +113,22 @@ const mainNavItems: NavItem[] = [
             },
         ],
     },
+    {
+        title: 'Gestão de Acessos',
+        icon: UserCog,
+        children: [
+            {
+                title: 'Utilizadores',
+                href: '/access/users',
+                icon: Users,
+            },
+            {
+                title: 'Roles',
+                href: '/access/roles',
+                icon: UserCog,
+            },
+        ],
+    },
 ];
 
 /*const footerNavItems: NavItem[] = [
