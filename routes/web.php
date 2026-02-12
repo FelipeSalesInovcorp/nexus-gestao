@@ -15,6 +15,7 @@ use App\Http\Controllers\ProposalItemController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SupplierOrderController;
 use App\Http\Controllers\SupplierInvoiceController;
+use App\Http\Controllers\Access\UserController;
 
 
 
@@ -155,6 +156,53 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/supplier-invoices/{supplierInvoice}/download-proof', [SupplierInvoiceController::class, 'downloadProof'])
             ->name('supplier-invoices.downloadProof');
     });
+
+    // Access Management
+    Route::prefix('access')->group(function () {
+        Route::get('/users', [\App\Http\Controllers\Access\UserController::class, 'index'])
+            ->name('access.users.index')
+            ->middleware('permission:access.users.view');
+
+        Route::get('/users/create', [\App\Http\Controllers\Access\UserController::class, 'create'])
+            ->name('access.users.create')
+            ->middleware('permission:access.users.create');
+
+        Route::post('/users', [\App\Http\Controllers\Access\UserController::class, 'store'])
+            ->name('access.users.store')
+            ->middleware('permission:access.users.create');
+
+        Route::get('/users/{user}/edit', [\App\Http\Controllers\Access\UserController::class, 'edit'])
+            ->name('access.users.edit')
+            ->middleware('permission:access.users.update');
+
+        Route::put('/users/{user}', [\App\Http\Controllers\Access\UserController::class, 'update'])
+            ->name('access.users.update')
+            ->middleware('permission:access.users.update');
+    });
+
+    // Access - Roles
+    Route::prefix('access')->group(function () {
+        Route::get('/roles', [\App\Http\Controllers\Access\RoleController::class, 'index'])
+            ->name('access.roles.index')
+            ->middleware('permission:access.roles.view');
+
+        Route::get('/roles/create', [\App\Http\Controllers\Access\RoleController::class, 'create'])
+            ->name('access.roles.create')
+            ->middleware('permission:access.roles.create');
+
+        Route::post('/roles', [\App\Http\Controllers\Access\RoleController::class, 'store'])
+            ->name('access.roles.store')
+            ->middleware('permission:access.roles.create');
+
+        Route::get('/roles/{role}/edit', [\App\Http\Controllers\Access\RoleController::class, 'edit'])
+            ->name('access.roles.edit')
+            ->middleware('permission:access.roles.update');
+
+        Route::put('/roles/{role}', [\App\Http\Controllers\Access\RoleController::class, 'update'])
+            ->name('access.roles.update')
+            ->middleware('permission:access.roles.update');
+    });
+
 });
 
 require __DIR__ . '/settings.php';

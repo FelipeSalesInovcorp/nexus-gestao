@@ -20,8 +20,11 @@ class DatabaseSeeder extends Seeder
         $this->call(RolePermissionSeeder::class);
 
         $this->call(AdminUserSeeder::class);
-
-
+        
+        // Executa o seeder de permissões
+        $this->call([
+            PermissionSeeder::class,
+        ]);
 
         /*User::factory()->create([
             'name' => 'Test User',
