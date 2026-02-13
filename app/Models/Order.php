@@ -3,9 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
+
+    use HasFactory, SoftDeletes, LogsActivity;
+
     protected $fillable = [
         'number', 'order_date', 'status', 'total',
         'entity_id', 'proposal_id',
@@ -30,4 +37,14 @@ class Order extends Model
     {
         return $this->hasMany(SupplierOrder::class);
     }
+    
+    // Activity Log
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->useLogName('Encomendas');
+    }
+
 }

@@ -6,13 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Contact;
+use App\Models\Country;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 
 class Entity extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected $fillable = [
         'number',
@@ -46,7 +49,7 @@ class Entity extends Model
     {
         return $this->belongsTo(Country::class);
     }
-    
+   
     // Relation with contacts
     /*public function contacts()
     {
@@ -69,5 +72,14 @@ class Entity extends Model
     {
         return $this->hasOne(Contact::class)->where('is_primary', true);
     }
-
+    
+    // Activity Log
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('Entidades');
+    }
 }
