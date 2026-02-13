@@ -14,6 +14,9 @@ class PermissionSeeder extends Seeder
             // Dashboard
             'dashboard.view',
 
+            // Logs
+            'logs.view',
+
             // Entities / Contacts
             'entities.view', 'entities.create', 'entities.update', 'entities.delete',
             'contacts.view', 'contacts.create', 'contacts.update', 'contacts.delete',

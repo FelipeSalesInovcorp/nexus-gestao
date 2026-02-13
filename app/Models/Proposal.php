@@ -5,9 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 class Proposal extends Model
 {
+    
+    use HasFactory, SoftDeletes, LogsActivity;
+
     protected $fillable = [
         'number',
         'proposal_date',
@@ -37,4 +45,13 @@ class Proposal extends Model
     {
         return $this->hasMany(ProposalItem::class);
     }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->useLogName('Propostas');
+    }
+
 }

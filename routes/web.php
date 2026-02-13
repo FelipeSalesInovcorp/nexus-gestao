@@ -16,6 +16,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SupplierOrderController;
 use App\Http\Controllers\SupplierInvoiceController;
 use App\Http\Controllers\Access\UserController;
+use App\Http\Controllers\LogController;
+
 
 
 
@@ -202,6 +204,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('access.roles.update')
             ->middleware('permission:access.roles.update');
     });
+
+    // Logs
+    Route::get('/logs', [LogController::class, 'index'])
+    ->middleware('permission:logs.view')
+    ->name('logs.index');
 
 });
 

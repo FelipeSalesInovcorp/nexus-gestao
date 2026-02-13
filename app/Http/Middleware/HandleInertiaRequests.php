@@ -39,9 +39,10 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+
             'name' => config('app.name'),
+
             'company' => function () {
-                // Evita erros em ambientes onde a migration ainda não foi corrida
                 if (!Schema::hasTable('company_settings')) {
                     return null;
                 }
@@ -57,18 +58,27 @@ class HandleInertiaRequests extends Middleware
                     'logo_url' => $company->logo_path ? route('company.logo') : null,
                 ];
             },
+
             'auth' => [
                 'user' => $request->user(),
+
+                'roles' => fn() =>
+                $request->user()
+                    ? $request->user()->getRoleNames()->values()
+                    : [],
+
+                'permissions' => fn() =>
+                $request->user()
+                    ? $request->user()->getAllPermissions()->pluck('name')->values()
+                    : [],
             ],
+
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
 
             'flash' => [
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),
             ],
-
         ];
-
-
     }
 }

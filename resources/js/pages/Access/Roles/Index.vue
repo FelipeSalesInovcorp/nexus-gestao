@@ -115,10 +115,10 @@ const filtered = computed(() => {
                                 ? 'bg-muted font-medium'
                                 : 'hover:bg-muted/50',
                             !l.url ? 'pointer-events-none opacity-50' : '',
-                            // eslint-disable-next-line vue/no-v-text-v-html-on-component
                         ]"
-                        v-html="l.label"
-                    />
+                    >
+                        <span v-html="l.label"></span>
+                    </Link>
                 </div>
             </CardContent>
         </Card>
