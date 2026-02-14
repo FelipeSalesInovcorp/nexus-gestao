@@ -13,6 +13,7 @@ import {
     Settings,
     Factory,
     Percent,
+    Calendar,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -146,6 +147,13 @@ const mainNavItems: NavItemWithPermission[] = [
     },
 
     {
+        title: 'Calendário',
+        href: '/calendar',
+        icon: Calendar,
+        permission: 'calendar.view',
+    },
+
+    {
         title: 'Configuração',
         icon: Settings,
         children: [
@@ -166,6 +174,19 @@ const mainNavItems: NavItemWithPermission[] = [
                 href: '/config/tax-rates',
                 icon: Percent,
                 permission: 'config.tax-rates.view',
+            },
+            // submenu dentro de Configuração > Calendário
+            {
+                title: 'Calendário - Tipos',
+                href: '/config/calendar/types',
+                icon: Settings,
+                permission: 'calendar.types.view',
+            },
+            {
+                title: 'Calendário - Ações',
+                href: '/config/calendar/actions',
+                icon: Settings,
+                permission: 'calendar.actions.view',
             },
         ],
     },

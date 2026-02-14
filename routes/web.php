@@ -17,8 +17,9 @@ use App\Http\Controllers\SupplierOrderController;
 use App\Http\Controllers\SupplierInvoiceController;
 use App\Http\Controllers\Access\UserController;
 use App\Http\Controllers\LogController;
-
-
+use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\Config\CalendarEventTypeController;
+use App\Http\Controllers\Config\CalendarEventActionController;
 
 
 Route::get('/', function () {
@@ -210,7 +211,70 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->middleware('permission:logs.view')
     ->name('logs.index');
 
+     // Calendar
+    Route::prefix('calendar')->group(function () {
+        Route::get('/', [CalendarController::class, 'index'])
+            ->name('calendar.index')
+            ->middleware('permission:calendar.view');
+
+        Route::get('/events', [CalendarController::class, 'events'])
+            ->name('calendar.events')
+            ->middleware('permission:calendar.view');
+
+        Route::post('/events', [CalendarController::class, 'store'])
+            ->name('calendar.events.store')
+            ->middleware('permission:calendar.create');
+
+        Route::put('/events/{event}', [CalendarController::class, 'update'])
+            ->name('calendar.events.update')
+            ->middleware('permission:calendar.update');
+
+        Route::delete('/events/{event}', [CalendarController::class, 'destroy'])
+            ->name('calendar.events.destroy')
+            ->middleware('permission:calendar.delete');
+    });
+
+    // Calendar - Eventos
+    Route::prefix('config/calendar')->group(function () {
+        // Tipos
+        Route::get('/types', [CalendarEventTypeController::class, 'index'])
+            ->name('config.calendar.types.index')
+            ->middleware('permission:calendar.types.view');
+
+        Route::post('/types', [CalendarEventTypeController::class, 'store'])
+            ->name('config.calendar.types.store')
+            ->middleware('permission:calendar.types.create');
+
+        Route::put('/types/{type}', [CalendarEventTypeController::class, 'update'])
+            ->name('config.calendar.types.update')
+            ->middleware('permission:calendar.types.update');
+
+        Route::delete('/types/{type}', [CalendarEventTypeController::class, 'destroy'])
+            ->name('config.calendar.types.destroy')
+            ->middleware('permission:calendar.types.delete');
+
+        // Ações
+        Route::get('/actions', [CalendarEventActionController::class, 'index'])
+            ->name('config.calendar.actions.index')
+            ->middleware('permission:calendar.actions.view');
+
+        Route::post('/actions', [CalendarEventActionController::class, 'store'])
+            ->name('config.calendar.actions.store')
+            ->middleware('permission:calendar.actions.create');
+
+        Route::put('/actions/{action}', [CalendarEventActionController::class, 'update'])
+            ->name('config.calendar.actions.update')
+            ->middleware('permission:calendar.actions.update');
+
+        Route::delete('/actions/{action}', [CalendarEventActionController::class, 'destroy'])
+            ->name('config.calendar.actions.destroy')
+            ->middleware('permission:calendar.actions.delete');
+    });
+
 });
+
+
+
 
 require __DIR__ . '/settings.php';
 
