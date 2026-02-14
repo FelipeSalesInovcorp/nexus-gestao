@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('calendar_event_actions', function (Blueprint $table) {
+            //
+            if (!Schema::hasColumn('calendar_event_actions', 'name')) {
+                $table->string('name')->after('id');
+            }
+            if (!Schema::hasColumn('calendar_event_actions', 'active')) {
+                $table->boolean('active')->default(true)->after('name');
+            }
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('calendar_event_actions', function (Blueprint $table) {
+            //
+            if (Schema::hasColumn('calendar_event_actions', 'active')) $table->dropColumn('active');
+            if (Schema::hasColumn('calendar_event_actions', 'name')) $table->dropColumn('name');
+        });
+    }
+};

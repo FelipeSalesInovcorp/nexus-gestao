@@ -17,6 +17,21 @@ class PermissionSeeder extends Seeder
             // Logs
             'logs.view',
 
+            // Calendar
+            'calendar.view',
+            'calendar.create',
+            'calendar.update',
+            'calendar.delete',
+            // Calendar config
+            'calendar.types.view',
+            'calendar.types.create',
+            'calendar.types.update',
+            'calendar.types.delete',
+            'calendar.actions.view',
+            'calendar.actions.create',
+            'calendar.actions.update',
+            'calendar.actions.delete',
+
             // Entities / Contacts
             'entities.view', 'entities.create', 'entities.update', 'entities.delete',
             'contacts.view', 'contacts.create', 'contacts.update', 'contacts.delete',
@@ -46,7 +61,7 @@ class PermissionSeeder extends Seeder
         }
 
         // Role Admin com tudo
-        $admin = Role::findOrCreate('Admin');
+        $admin = Role::findOrCreate('admin');
         $admin->syncPermissions(Permission::all());
     }
 }
