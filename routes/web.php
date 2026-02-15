@@ -20,6 +20,7 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\Config\CalendarEventTypeController;
 use App\Http\Controllers\Config\CalendarEventActionController;
+use App\Http\Controllers\OnboardingController;
 
 
 Route::get('/', function () {
@@ -271,6 +272,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('permission:calendar.actions.delete');
     });
 
+    // Onboarding
+    Route::middleware(['auth'])->group(function () {
+
+        Route::get('/onboarding', [OnboardingController::class, 'index'])
+            ->name('onboarding.index');
+
+        Route::post('/onboarding', [OnboardingController::class, 'store'])
+            ->name('onboarding.store');
+    });
 });
 
 

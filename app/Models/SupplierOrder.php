@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Entity;
 use App\Models\Order;
+use App\Models\Concerns\BelongsToTenant;
 
 
 class SupplierOrder extends Model
 {
+        use BelongsToTenant;
+
     protected $fillable = [
         'supplier_id',
         'order_id',
