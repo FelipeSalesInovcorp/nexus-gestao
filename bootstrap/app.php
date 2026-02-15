@@ -9,6 +9,8 @@ use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use App\Http\Middleware\SetTenant;
+use App\Http\Middleware\EnsureTenantSelected;
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -42,6 +44,8 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            SetTenant::class, // MIDDLEWARE DE TENANT
+            EnsureTenantSelected::class, // MIDDLEWARE DE TENANT
         ]);
     })
 

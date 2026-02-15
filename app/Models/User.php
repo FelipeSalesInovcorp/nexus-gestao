@@ -10,6 +10,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
 class User extends Authenticatable
@@ -64,5 +66,18 @@ class User extends Authenticatable
             ])
             ->logOnlyDirty()
             ->useLogName('Utilizadores');
+    }
+    
+    // Relationships
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_user')
+            ->withPivot(['role'])
+            ->withTimestamps();
+    }
+
+    public function activeTenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'active_tenant_id');
     }
 }
