@@ -18,15 +18,23 @@ return new class extends Migration {
         });
     }
 
+    private function isMySql(): bool
+    {
+        $driver = DB::getDriverName();
+        return in_array($driver, ['mysql', 'mariadb'], true);
+    }
+
     private function addTenantIdFk(string $table): void
     {
         if (!Schema::hasTable($table)) return;
         if (!Schema::hasColumn($table, 'tenant_id')) return;
 
-        // FK name fixo para evitar duplicados
+        //  Em sqlite (tests), não criar FK (evita quebra)
+        if (!$this->isMySql()) return;
+
         $fkName = "{$table}_tenant_id_foreign";
 
-        // Se já existir, não cria de novo
+        //  Só MySQL/MariaDB tem information_schema
         $existing = DB::select("
             SELECT CONSTRAINT_NAME
             FROM information_schema.KEY_COLUMN_USAGE
@@ -76,7 +84,7 @@ return new class extends Migration {
 
         $tenantId = (int) $default->id;
 
-        // 2) adiciona tenant_id (nullable) nas tabelas core do teu projeto
+        // 2) adiciona tenant_id (nullable) nas tabelas core
         $tables = [
             // business
             'entities',
@@ -98,7 +106,7 @@ return new class extends Migration {
             'calendar_event_types',
             'calendar_event_actions',
 
-            // logs (recomendado)
+            // logs
             'activity_log',
         ];
 
@@ -106,7 +114,7 @@ return new class extends Migration {
             $this->addTenantIdColumn($table);
         }
 
-        // 3) backfill em tudo
+        // 3) backfill
         foreach ($tables as $table) {
             $this->backfillTenantId($table, $tenantId);
         }
@@ -129,16 +137,12 @@ return new class extends Migration {
                 ]);
             }
 
-            // seta tenant ativo para users sem active_tenant_id
-            /*DB::table('users')->whereNull('active_tenant_id')->update(['active_tenant_id' => $tenantId]);*/
-
             if (Schema::hasColumn('users', 'active_tenant_id')) {
                 DB::table('users')->whereNull('active_tenant_id')->update(['active_tenant_id' => $tenantId]);
             }
-
         }
 
-        // 5) FK (opcional mas recomendado) — só depois do backfill
+        // 5) FK (só MySQL/MariaDB)
         foreach ($tables as $table) {
             $this->addTenantIdFk($table);
         }
@@ -146,30 +150,54 @@ return new class extends Migration {
 
     public function down(): void
     {
-        // Remove FKs e colunas (se existirem)
         $tables = [
-            'entities','contacts','proposals','proposal_items','orders','order_items',
-            'supplier_orders','supplier_order_items','supplier_invoices','calendar_events',
-            'company_settings','products','tax_rates','contact_roles',
-            'calendar_event_types','calendar_event_actions','activity_log',
+            'entities',
+            'contacts',
+            'proposals',
+            'proposal_items',
+            'orders',
+            'order_items',
+            'supplier_orders',
+            'supplier_order_items',
+            'supplier_invoices',
+            'calendar_events',
+            'company_settings',
+            'products',
+            'tax_rates',
+            'contact_roles',
+            'calendar_event_types',
+            'calendar_event_actions',
+            'activity_log',
         ];
 
         foreach ($tables as $table) {
             if (!Schema::hasTable($table) || !Schema::hasColumn($table, 'tenant_id')) continue;
 
             Schema::table($table, function (Blueprint $t) use ($table) {
-                // drop FK se existir
                 $fk = "{$table}_tenant_id_foreign";
-                try { $t->dropForeign($fk); } catch (\Throwable $e) {}
-                try { $t->dropIndex([$table.'_tenant_id_index']); } catch (\Throwable $e) {}
-                try { $t->dropColumn('tenant_id'); } catch (\Throwable $e) {}
+
+                // dropForeign com try/catch é ok (em sqlite nem existe FK)
+                try {
+                    $t->dropForeign($fk);
+                } catch (\Throwable $e) {
+                }
+                try {
+                    $t->dropIndex([$table . '_tenant_id_index']);
+                } catch (\Throwable $e) {
+                }
+                try {
+                    $t->dropColumn('tenant_id');
+                } catch (\Throwable $e) {
+                }
             });
         }
 
-        // remove coluna users.active_tenant_id (se existir)
         if (Schema::hasTable('users') && Schema::hasColumn('users', 'active_tenant_id')) {
             Schema::table('users', function (Blueprint $t) {
-                try { $t->dropConstrainedForeignId('active_tenant_id'); } catch (\Throwable $e) {}
+                try {
+                    $t->dropConstrainedForeignId('active_tenant_id');
+                } catch (\Throwable $e) {
+                }
             });
         }
 
