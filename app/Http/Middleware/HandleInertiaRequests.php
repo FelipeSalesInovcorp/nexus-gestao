@@ -61,6 +61,25 @@ class HandleInertiaRequests extends Middleware
 
             'auth' => [
                 'user' => $request->user(),
+                
+                //  tenants do utilizador (para sidebar / selector)
+                'tenants' => fn () => $request->user()
+                    ? $request->user()
+                        ->tenants()
+                        ->orderBy('tenants.name')
+                        ->get(['tenants.id', 'tenants.name'])
+                    : [],
+
+                //  tenant ativo (id)
+                'active_tenant_id' => fn () => $request->user()?->active_tenant_id,
+
+                //  tenant ativo (objeto leve)
+                'active_tenant' => fn () => $request->user()?->activeTenant
+                    ? [
+                        'id' => $request->user()->activeTenant->id,
+                        'name' => $request->user()->activeTenant->name,
+                    ]
+                    : null,
 
                 'roles' => fn() =>
                 $request->user()

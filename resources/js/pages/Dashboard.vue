@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,17 @@ import { type BreadcrumbItem } from '@/types';
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboard().url },
 ];
+
+const page = usePage<any>();
+const tenantPlan = computed(() => page.props.tenantPlan);
+const delivery = computed(() => page.props.delivery);
+
+const planLabel = computed(() => {
+    const p = tenantPlan.value?.plan ?? 'trial';
+    if (p === 'enterprise') return 'Enterprise';
+    if (p === 'pro') return 'Pro';
+    return 'Trial';
+});
 </script>
 
 <template>
@@ -26,6 +38,69 @@ const breadcrumbs: BreadcrumbItem[] = [
                     Visão geral do sistema e atalhos rápidos.
                 </p>
             </div>
+
+            <!-- ✅ Banner deadline entrega -->
+            <div
+                v-if="delivery?.warn"
+                class="rounded-lg border border-border/50 bg-background/40 p-3 text-sm"
+            >
+                <div class="font-semibold">Entrega do projeto</div>
+                <div class="opacity-80">
+                    Deadline: <b>{{ delivery.deadline }}</b>
+                    <span v-if="typeof delivery.days_left === 'number'">
+                        — faltam {{ delivery.days_left }} dia(s)
+                    </span>
+                </div>
+            </div>
+
+            <!-- ✅ Banner trial warning -->
+            <div
+                v-if="tenantPlan?.trial_warning"
+                class="rounded-lg border border-border/50 bg-background/40 p-3 text-sm"
+            >
+                <div class="font-semibold">Trial a terminar</div>
+                <div class="opacity-80">
+                    <span v-if="typeof tenantPlan.trial_days_left === 'number'">
+                        Faltam {{ tenantPlan.trial_days_left }} dia(s) para o
+                        fim do trial.
+                    </span>
+                </div>
+            </div>
+
+            <!-- ✅ Card plano + uso -->
+            <Card
+                class="border-sidebar-border/70 bg-slate-900/40 dark:border-sidebar-border"
+            >
+                <CardHeader class="flex flex-row items-center justify-between">
+                    <CardTitle class="text-base">Plano atual</CardTitle>
+                    <Badge variant="secondary">{{ planLabel }}</Badge>
+                </CardHeader>
+
+                <CardContent>
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-sm text-muted-foreground">
+                                Empresa
+                            </div>
+                            <div class="text-lg font-semibold">
+                                {{
+                                    page.props.auth?.active_tenant?.name ?? '—'
+                                }}
+                            </div>
+                        </div>
+
+                        <div class="text-right">
+                            <div class="text-sm text-muted-foreground">
+                                Utilizadores
+                            </div>
+                            <div class="text-lg font-semibold">
+                                {{ tenantPlan?.users?.used ?? 0 }} /
+                                {{ tenantPlan?.users?.max ?? 0 }}
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <!-- Cards -->
             <div class="grid gap-4 md:grid-cols-3">
