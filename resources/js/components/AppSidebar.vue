@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import {
     LayoutGrid,
     Users,
@@ -15,7 +15,7 @@ import {
     Percent,
     Calendar,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -33,30 +33,106 @@ import {
 import { type NavItem } from '@/types';
 import AppLogo from './AppLogo.vue';
 
-// ✅ Tipo local (não mexe em "@/types")
+// ---------------- Types ----------------
+type TenantOpt = { id: number; name: string; slug?: string | null };
+
 type NavItemWithPermission = NavItem & {
     permission?: string | string[]; // string = 1 perm; array = any-of
     children?: NavItemWithPermission[];
 };
 
 type PageProps = {
+    company?: { name?: string; logo_url?: string | null };
     auth?: {
+        user?: { active_tenant_id?: number | null };
         permissions?: string[];
         roles?: string[];
+        tenants?: TenantOpt[];
+        active_tenant_id?: number | null;
+        active_tenant?: { id: number; name: string } | null;
     };
+    // Mantém compatibilidade se nalgum sitio vier fora do auth
+    tenants?: TenantOpt[];
+    activeTenantId?: number | null;
 };
 
 const page = usePage<PageProps>();
+
+// ---------------- Company ----------------
+/*const companyName = computed(() => page.props.company?.name ?? 'Nexus')
+const companyLogoUrl = computed(() => page.props.company?.logo_url ?? null)*/
+
+// ---------------- Auth/Tenant props ----------------
 const permissions = computed(() => page.props.auth?.permissions ?? []);
-//const roles = computed(() => page.props.auth?.roles ?? [])
+const tenants = computed<TenantOpt[]>(() => {
+    return (page.props.auth?.tenants ??
+        page.props.tenants ??
+        []) as TenantOpt[];
+});
 
-// Se quiser bypass para admin (opcional), descomente:
-//const isAdmin = computed(() => roles.value.includes('admin') || roles.value.includes('Admin'))
+const activeTenantId = computed<number | null>(() => {
+    const v =
+        page.props.auth?.active_tenant_id ??
+        page.props.auth?.user?.active_tenant_id ??
+        page.props.activeTenantId ??
+        null;
+    return v ? Number(v) : null;
+});
 
+const activeTenantName = computed(() => {
+    // se vier o objeto active_tenant do backend, usa-o (mais fiável)
+    const direct = page.props.auth?.active_tenant?.name;
+    if (direct) return direct;
+
+    const id = activeTenantId.value;
+    if (!id) return '';
+    return tenants.value.find((t) => Number(t.id) === Number(id))?.name ?? '';
+});
+
+// Selector state (sync com prop)
+const selectedTenantId = ref<number | ''>('');
+const switching = ref(false);
+const errorMsg = ref('');
+
+watch(
+    () => activeTenantId.value,
+    (id) => {
+        selectedTenantId.value = id ? Number(id) : '';
+    },
+    { immediate: true },
+);
+
+function switchTenant() {
+    errorMsg.value = '';
+    const tenantId = selectedTenantId.value;
+    if (!tenantId) return;
+
+    switching.value = true;
+
+    router.post(
+        '/tenants/switch',
+        { tenant_id: Number(tenantId) },
+        {
+            preserveScroll: true,
+            // IMPORTANTE: precisamos recarregar props para refletir o tenant novo
+            preserveState: false,
+            onFinish: () => {
+                switching.value = false;
+            },
+            onError: (errors) => {
+                switching.value = false;
+                errorMsg.value =
+                    (errors as any)?.tenant_id ||
+                    (errors as any)?.message ||
+                    'Não foi possível trocar a empresa.';
+            },
+        },
+    );
+}
+
+// ---------------- Permissões ----------------
 function hasPermission(required?: string | string[]) {
     if (!required) return true;
-    // if (isAdmin.value) return true
-
     const reqList = Array.isArray(required) ? required : [required];
     return reqList.some((p) => permissions.value.includes(p));
 }
@@ -64,26 +140,25 @@ function hasPermission(required?: string | string[]) {
 function filterNav(items: NavItemWithPermission[]): NavItemWithPermission[] {
     return (items ?? [])
         .map((item) => {
-            // 1) filtra filhos primeiro
             const filteredChildren = item.children
                 ? filterNav(item.children)
                 : undefined;
 
-            // 2) bloqueia item se não tiver permissão
             if (!hasPermission(item.permission)) return null;
 
-            // 3) se for grupo e ficou sem filhos, remove
             if (
                 item.children &&
                 (!filteredChildren || filteredChildren.length === 0)
-            )
+            ) {
                 return null;
+            }
 
             return { ...item, children: filteredChildren };
         })
         .filter(Boolean) as NavItemWithPermission[];
 }
 
+// ---------------- Menu ----------------
 const mainNavItems: NavItemWithPermission[] = [
     {
         title: 'Dashboard',
@@ -145,14 +220,12 @@ const mainNavItems: NavItemWithPermission[] = [
         icon: UserCog,
         permission: 'supplier-invoices.view',
     },
-
     {
         title: 'Calendário',
         href: '/calendar',
         icon: Calendar,
         permission: 'calendar.view',
     },
-
     {
         title: 'Configuração',
         icon: Settings,
@@ -175,7 +248,6 @@ const mainNavItems: NavItemWithPermission[] = [
                 icon: Percent,
                 permission: 'config.tax-rates.view',
             },
-            // submenu dentro de Configuração > Calendário
             {
                 title: 'Calendário - Tipos',
                 href: '/config/calendar/types',
@@ -216,27 +288,87 @@ const mainNavItems: NavItemWithPermission[] = [
     },
 ];
 
-// Mantive o teu footerNavItems como está no projeto.
-// Se no teu projeto ele estiver noutro ficheiro/const, continua igual.
-// Se não existir, ou define aqui, ou remove do template.
+//  como no projeto
+declare const footerNavItems: any;
 </script>
 
 <template>
     <Sidebar variant="inset">
-        <SidebarHeader>
+        <SidebarHeader class="px-2">
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link href="/dashboard">
+                        <Link href="/dashboard" class="flex items-center gap-3">
+                            <!--  AppLogo -->
                             <AppLogo />
+
+                            <!-- nome + tenant ativo (melhora leitura) -->
+                            <!--<div class="min-w-0 leading-tight">
+                                <div class="truncate text-sm font-semibold">{{ companyName }}</div>
+                                <div class="truncate text-xs text-muted-foreground">
+                                    {{ activeTenantName ? `Empresa · ${activeTenantName}` : '—' }}
+                                </div>
+                            </div>-->
+
+                            <div class="flex items-center gap-3">
+                                <!--<div
+                                    class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border bg-background">
+                                    <img v-if="companyLogoUrl" :src="companyLogoUrl" alt="logo"
+                                        class="h-full w-full object-contain" />
+                                    <div v-else class="text-xs font-semibold opacity-70">N</div>
+                                </div>-->
+
+                                <div class="min-w-0 flex-1">
+                                    <!--<div class="truncate text-sm font-semibold">
+                                        {{ companyName }}
+                                    </div>-->
+                                    <div class="truncate text-xs opacity-70">
+                                        {{
+                                            activeTenantName
+                                                ? `· ${activeTenantName}`
+                                                : '—'
+                                        }}
+                                    </div>
+                                </div>
+                            </div>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
+
+            <!-- Seletor de tenant (debaixo do logo) -->
+            <div class="mt-3 px-1">
+                <div
+                    class="mb-1 flex items-center justify-between text-xs text-muted-foreground"
+                >
+                    <span>Empresa</span>
+                    <span v-if="switching" class="text-[11px] opacity-80"
+                        >A mudar…</span
+                    >
+                </div>
+
+                <select
+                    v-model="selectedTenantId"
+                    class="h-9 w-full rounded-md border bg-background px-2 text-sm"
+                    :disabled="switching || tenants.length <= 1"
+                    @change="switchTenant"
+                >
+                    <option v-if="tenants.length === 0" value="" disabled>
+                        Sem empresas
+                    </option>
+
+                    <option v-for="t in tenants" :key="t.id" :value="t.id">
+                        {{ t.name }}
+                    </option>
+                </select>
+
+                <div v-if="errorMsg" class="mt-1 text-xs text-destructive">
+                    {{ errorMsg }}
+                </div>
+            </div>
         </SidebarHeader>
 
         <SidebarContent>
-            <!-- ✅ menu já filtrado por permissões -->
             <NavMain :items="filterNav(mainNavItems) as unknown as NavItem[]" />
         </SidebarContent>
 
@@ -245,5 +377,6 @@ const mainNavItems: NavItemWithPermission[] = [
             <NavUser />
         </SidebarFooter>
     </Sidebar>
+
     <slot />
 </template>

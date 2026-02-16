@@ -21,7 +21,12 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\Config\CalendarEventTypeController;
 use App\Http\Controllers\Config\CalendarEventActionController;
 use App\Http\Controllers\OnboardingController;
-
+use App\Http\Controllers\TenantSwitchController;
+use App\Http\Controllers\TenantPlanController;
+use App\Support\PlanLimits;
+use App\Support\TenantUsage;
+use Carbon\Carbon;
+use App\Support\TenantContext;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -32,9 +37,52 @@ Route::get('/', function () {
 // Logo da empresa (armazenado fora de public_html)
 Route::get('/company/logo', [CompanyController::class, 'logo'])->name('company.logo');
 
-Route::get('dashboard', function () {
+/*Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');*/
+
+
+Route::get('dashboard', function () {
+
+    $tenant = TenantContext::get();
+
+    $plan = $tenant?->plan ?? 'trial';
+    $maxUsers = $tenant ? PlanLimits::maxUsers($tenant) : 0;
+    $usedUsers = $tenant ? TenantUsage::usersCount($tenant) : 0;
+
+    $trialEndsAt = $tenant?->trial_ends_at;
+    $trialWarnDays = (int) config('plan_limits.trial_warn_days', 7);
+
+    $deadline = Carbon::parse(
+        config('plan_limits.delivery_deadline', '2026-02-18')
+    )->endOfDay();
+
+    $deadlineWarnDays = (int) config('plan_limits.delivery_warn_days', 5);
+
+    return Inertia::render('Dashboard', [
+        'tenantPlan' => [
+            'plan' => $plan,
+            'trial_ends_at' => $trialEndsAt,
+            'users' => [
+                'used' => $usedUsers,
+                'max' => $maxUsers,
+            ],
+            'trial_warning' => $tenant && $plan === 'trial' && $trialEndsAt
+                ? now()->diffInDays($trialEndsAt, false) <= $trialWarnDays
+                : false,
+            'trial_days_left' => ($tenant && $plan === 'trial' && $trialEndsAt)
+                ? now()->diffInDays($trialEndsAt, false)
+                : null,
+        ],
+        'delivery' => [
+            'deadline' => $deadline->toDateString(),
+            'warn' => now()->diffInDays($deadline, false) <= $deadlineWarnDays,
+            'days_left' => now()->diffInDays($deadline, false),
+        ],
+    ]);
+
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/entities', [EntityController::class, 'index'])->name('entities.index');
@@ -281,9 +329,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/onboarding', [OnboardingController::class, 'store'])
             ->name('onboarding.store');
     });
+
+    // Tenant Switch (multi-tenancy)
+    Route::post('/tenants/switch', [TenantSwitchController::class, 'store'])
+        ->name('tenants.switch');
+
+    Route::middleware(['auth'])->put('/tenants/{tenant}/plan', [TenantPlanController::class, 'update'])->name('tenants.plan.update');
+
 });
-
-
 
 
 require __DIR__ . '/settings.php';
