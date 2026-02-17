@@ -15,11 +15,16 @@ class Tenant extends Model
         'plan',
         'trial_ends_at',
         'is_active',
+        'plan_changed_at',
+        'scheduled_plan',
+        'scheduled_plan_at',
     ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
         'is_active' => 'boolean',
+        'plan_changed_at' => 'datetime',
+        'scheduled_plan_at' => 'datetime',
     ];
 
     public function owner(): BelongsTo

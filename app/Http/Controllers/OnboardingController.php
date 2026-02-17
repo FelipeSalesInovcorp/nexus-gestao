@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Services\TenantPlanService;
 
 class OnboardingController extends Controller
 {
@@ -27,6 +28,9 @@ class OnboardingController extends Controller
             'name' => $data['name'],
             'slug' => Str::slug($data['name']) . '-' . uniqid(),
         ]);
+        
+        // start trial
+        app(TenantPlanService::class)->startTrial($tenant, $user->id, 14);  
 
         // attach user
         $user->tenants()->attach($tenant->id, ['role' => 'owner']);

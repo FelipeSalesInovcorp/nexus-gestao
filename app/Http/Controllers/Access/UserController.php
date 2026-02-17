@@ -45,7 +45,15 @@ class UserController extends Controller
             'password' => bcrypt($data['password']),
         ]);
 
-        $user->syncRoles($data['roles'] ?? []);
+        //$user->syncRoles($data['roles'] ?? []);
+
+        $roles = $data['roles'] ?? [];
+
+        if (empty($roles)) {
+            $roles = ['Financeiro']; // default
+        }
+
+        $user->syncRoles($roles);
 
         if ($tenant) {
             // garante membership na pivot (sem duplicar)

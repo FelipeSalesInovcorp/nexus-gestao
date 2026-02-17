@@ -5,6 +5,7 @@ namespace App\Actions\Fortify;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
@@ -24,10 +25,23 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
-            'password' => $input['password'],
+            // IMPORTANTE: guardar hash
+            'password' => Hash::make($input['password']),
         ]);
+
+        //  Role default automático
+        // (Se o role não existir, não quebra o registo)
+        try {
+            if ($user->roles()->count() === 0) {
+                $user->assignRole('Financeiro');
+            }
+        } catch (\Throwable $e) {
+            // noop
+        }
+
+        return $user;
     }
 }
