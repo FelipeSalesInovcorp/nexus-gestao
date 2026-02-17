@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Carbon\Carbon;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\EntityContactController;
@@ -25,8 +26,11 @@ use App\Http\Controllers\TenantSwitchController;
 use App\Http\Controllers\TenantPlanController;
 use App\Support\PlanLimits;
 use App\Support\TenantUsage;
-use Carbon\Carbon;
+use App\Models\TenantEvent;
 use App\Support\TenantContext;
+
+
+// Public
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -37,57 +41,84 @@ Route::get('/', function () {
 // Logo da empresa (armazenado fora de public_html)
 Route::get('/company/logo', [CompanyController::class, 'logo'])->name('company.logo');
 
-/*Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');*/
-
+//Dashboard (auth + verified)
 
 Route::get('dashboard', function () {
-
     $tenant = TenantContext::get();
 
     $plan = $tenant?->plan ?? 'trial';
     $maxUsers = $tenant ? PlanLimits::maxUsers($tenant) : 0;
     $usedUsers = $tenant ? TenantUsage::usersCount($tenant) : 0;
 
-    $trialEndsAt = $tenant?->trial_ends_at;
+    // ---------- Datas sempre em "dia inteiro" ----------
+    $today = now()->startOfDay();
+
+    // Trial
+    $trialEndsAt = $tenant?->trial_ends_at ? Carbon::parse($tenant->trial_ends_at)->startOfDay() : null;
     $trialWarnDays = (int) config('plan_limits.trial_warn_days', 7);
 
-    $deadline = Carbon::parse(
-        config('plan_limits.delivery_deadline', '2026-02-18')
-    )->endOfDay();
+    $trialDaysLeft = ($tenant && $plan === 'trial' && $trialEndsAt)
+        ? (int) $today->diffInDays($trialEndsAt, false)
+        : null;
 
+    $trialWarning = ($tenant && $plan === 'trial' && $trialEndsAt)
+        ? $trialDaysLeft <= $trialWarnDays
+        : false;
+
+    // Delivery deadline
+    $deadline = Carbon::parse(config('plan_limits.delivery_deadline', '2026-02-18'))->startOfDay();
     $deadlineWarnDays = (int) config('plan_limits.delivery_warn_days', 5);
+    $deliveryDaysLeft = (int) $today->diffInDays($deadline, false);
+
+    // ---------- Últimos eventos do tenant ----------
+    $tenantEvents = [];
+    if ($tenant) {
+        $tenantEvents = TenantEvent::query()
+            ->where('tenant_id', $tenant->id)
+            ->latest('id')
+            ->take(10)
+            ->get(['id', 'type', 'from', 'to', 'meta', 'created_at'])
+            ->map(fn ($e) => [
+                'id' => $e->id,
+                'type' => $e->type,
+                'from' => $e->from,
+                'to' => $e->to,
+                'meta' => $e->meta,
+                'created_at' => optional($e->created_at)->toDateTimeString(),
+            ])
+            ->values()
+            ->all();
+    }
 
     return Inertia::render('Dashboard', [
         'tenantPlan' => [
             'plan' => $plan,
-            'trial_ends_at' => $trialEndsAt,
+            'trial_ends_at' => $trialEndsAt?->toDateTimeString(),
             'users' => [
                 'used' => $usedUsers,
                 'max' => $maxUsers,
             ],
-            'trial_warning' => $tenant && $plan === 'trial' && $trialEndsAt
-                ? now()->diffInDays($trialEndsAt, false) <= $trialWarnDays
-                : false,
-            'trial_days_left' => ($tenant && $plan === 'trial' && $trialEndsAt)
-                ? now()->diffInDays($trialEndsAt, false)
-                : null,
+            'trial_warning' => $trialWarning,
+            'trial_days_left' => $trialDaysLeft,
         ],
         'delivery' => [
             'deadline' => $deadline->toDateString(),
-            'warn' => now()->diffInDays($deadline, false) <= $deadlineWarnDays,
-            'days_left' => now()->diffInDays($deadline, false),
+            'warn' => $deliveryDaysLeft <= $deadlineWarnDays,
+            'days_left' => $deliveryDaysLeft,
         ],
+        'tenantEvents' => $tenantEvents,
     ]);
-
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/entities', [EntityController::class, 'index'])->name('entities.index');
+// App (auth + verified)
 
-    // Entities - create/edit pages
+Route::middleware(['auth', 'verified'])->group(function () {
+
+//Base (sem gating)
+
+    // Entities
+    Route::get('/entities', [EntityController::class, 'index'])->name('entities.index');
     Route::get('/entities/create', [EntityController::class, 'create'])->name('entities.create');
     Route::get('/entities/{entity}/edit', [EntityController::class, 'edit'])->name('entities.edit');
 
@@ -99,17 +130,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/entities/{entity}/contacts', [EntityContactController::class, 'store'])->name('entities.contacts.store');
     Route::delete('/entities/{entity}/contacts/{contact}', [EntityContactController::class, 'destroy'])->name('entities.contacts.destroy');
 
-    // Config - Contact Roles (resource)
-    Route::resource('config/contact-roles', ContactRoleController::class)
-        ->names('contact-roles');
+    // Config - Contact Roles
+    Route::resource('config/contact-roles', ContactRoleController::class)->names('contact-roles');
 
     // Contacts
-    /*Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
-    });*/
-    // contacts new
     Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
-
 
     // Config - Tax Rates
     Route::resource('config/tax-rates', TaxRateController::class)
@@ -117,65 +142,62 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->names('tax-rates');
 
     // Config - Products
-    Route::resource('config/products', ProductController::class)
-    ->names('products');
-
-    /*Config - Empresa
-    Route::get('/config/company', [CompanyController::class, 'edit'])->name('config.company.edit');
-    Route::put('/config/company', [CompanyController::class, 'update'])->name('config.company.update');*/
+    Route::resource('config/products', ProductController::class)->names('products');
 
     // Config - Empresa (single record)
     Route::get('/config/company', [CompanyController::class, 'edit'])->name('config.company.edit');
     Route::put('/config/company', [CompanyController::class, 'update'])->name('config.company.update');
 
-    // Proposals
-    Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals.index');
-    Route::get('/proposals/create', [ProposalController::class, 'create'])->name('proposals.create');
-    Route::post('/proposals', [ProposalController::class, 'store'])->name('proposals.store');
-    Route::get('/proposals/{proposal}/edit', [ProposalController::class, 'edit'])->name('proposals.edit');
-    Route::put('/proposals/{proposal}', [ProposalController::class, 'update'])->name('proposals.update');
-    Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy'); // Soft delete
+ //Proposals (feature gated)
 
-    Route::get('/proposals/{proposal}', [ProposalController::class, 'show'])->name('proposals.show');
+    Route::middleware(['feature:proposals'])->group(function () {
+        Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals.index');
+        Route::get('/proposals/create', [ProposalController::class, 'create'])->name('proposals.create');
+        Route::post('/proposals', [ProposalController::class, 'store'])->name('proposals.store');
+        Route::get('/proposals/{proposal}/edit', [ProposalController::class, 'edit'])->name('proposals.edit');
+        Route::put('/proposals/{proposal}', [ProposalController::class, 'update'])->name('proposals.update');
+        Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy');
 
-    // PDF
-    Route::get('/proposals/{proposal}/pdf', [ProposalController::class, 'pdf'])->name('proposals.pdf');
+        Route::get('/proposals/{proposal}', [ProposalController::class, 'show'])->name('proposals.show');
 
-    // Converter em encomenda (draft)
-    Route::post('/proposals/{proposal}/convert-to-order', [ProposalController::class, 'convertToOrder'])
-        ->name('proposals.convertToOrder');
-
-    // orders
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    // orders - create/edit pages
-    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-
-    Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
-    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
-    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
-
-    Route::post('/orders/{order}/convert-suppliers', [OrderController::class, 'convertToSupplierOrders'])
-    ->name('orders.convert-suppliers');
-
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    Route::get('/orders/{order}/pdf', [OrderController::class, 'pdf'])->name('orders.pdf');
-
-    // Supplier Orders
-    Route::prefix('supplier-orders')->group(function () {
-
-        Route::get('/', [SupplierOrderController::class, 'index'])
-            ->name('supplier-orders.index');
-
-        Route::get('/{supplierOrder}', [SupplierOrderController::class, 'show'])
-            ->name('supplier-orders.show');
-
-        Route::get('/{supplierOrder}/pdf', [SupplierOrderController::class, 'pdf'])
-            ->name('supplier-orders.pdf');
+        // PDF + Converter em encomenda (também gated)
+        Route::get('/proposals/{proposal}/pdf', [ProposalController::class, 'pdf'])->name('proposals.pdf');
+        Route::post('/proposals/{proposal}/convert-to-order', [ProposalController::class, 'convertToOrder'])
+            ->name('proposals.convertToOrder');
     });
 
-    // Finance - Supplier Invoices
-    Route::prefix('finance')->group(function () {
+//Orders (feature gated)
+
+    Route::middleware(['feature:orders'])->group(function () {
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
+        Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+
+        Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+        Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+        Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+
+        Route::post('/orders/{order}/convert-suppliers', [OrderController::class, 'convertToSupplierOrders'])
+            ->name('orders.convert-suppliers');
+
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{order}/pdf', [OrderController::class, 'pdf'])->name('orders.pdf');
+    });
+
+
+//Supplier Orders (feature gated)
+ 
+    Route::middleware(['feature:supplier_orders'])->prefix('supplier-orders')->group(function () {
+        Route::get('/', [SupplierOrderController::class, 'index'])->name('supplier-orders.index');
+        Route::get('/{supplierOrder}', [SupplierOrderController::class, 'show'])->name('supplier-orders.show');
+        Route::get('/{supplierOrder}/pdf', [SupplierOrderController::class, 'pdf'])->name('supplier-orders.pdf');
+    });
+
+
+//Finance - Supplier Invoices (feature gated)
+ 
+    Route::middleware(['feature:supplier_invoices'])->prefix('finance')->group(function () {
+
         Route::get('/supplier-invoices', [SupplierInvoiceController::class, 'index'])
             ->name('supplier-invoices.index');
 
@@ -209,8 +231,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('supplier-invoices.downloadProof');
     });
 
-    // Access Management
-    Route::prefix('access')->group(function () {
+
+//Access Management (feature gated + permission gated)
+
+    Route::middleware(['feature:access_management'])->prefix('access')->group(function () {
+
+        // Users
         Route::get('/users', [\App\Http\Controllers\Access\UserController::class, 'index'])
             ->name('access.users.index')
             ->middleware('permission:access.users.view');
@@ -230,10 +256,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/users/{user}', [\App\Http\Controllers\Access\UserController::class, 'update'])
             ->name('access.users.update')
             ->middleware('permission:access.users.update');
-    });
 
-    // Access - Roles
-    Route::prefix('access')->group(function () {
+        // Roles
         Route::get('/roles', [\App\Http\Controllers\Access\RoleController::class, 'index'])
             ->name('access.roles.index')
             ->middleware('permission:access.roles.view');
@@ -255,89 +279,91 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('permission:access.roles.update');
     });
 
-    // Logs
+//Logs (feature gated + permission gated)
+
     Route::get('/logs', [LogController::class, 'index'])
-    ->middleware('permission:logs.view')
-    ->name('logs.index');
+        ->middleware(['feature:logs', 'permission:logs.view'])
+        ->name('logs.index');
+ 
+//Calendar (feature gated + permission gated)
 
-     // Calendar
-    Route::prefix('calendar')->group(function () {
-        Route::get('/', [CalendarController::class, 'index'])
-            ->name('calendar.index')
-            ->middleware('permission:calendar.view');
+    Route::middleware(['feature:calendar'])->group(function () {
 
-        Route::get('/events', [CalendarController::class, 'events'])
-            ->name('calendar.events')
-            ->middleware('permission:calendar.view');
+        Route::prefix('calendar')->group(function () {
 
-        Route::post('/events', [CalendarController::class, 'store'])
-            ->name('calendar.events.store')
-            ->middleware('permission:calendar.create');
+            Route::get('/', [CalendarController::class, 'index'])
+                ->name('calendar.index')
+                ->middleware('permission:calendar.view');
 
-        Route::put('/events/{event}', [CalendarController::class, 'update'])
-            ->name('calendar.events.update')
-            ->middleware('permission:calendar.update');
+            Route::get('/events', [CalendarController::class, 'events'])
+                ->name('calendar.events')
+                ->middleware('permission:calendar.view');
 
-        Route::delete('/events/{event}', [CalendarController::class, 'destroy'])
-            ->name('calendar.events.destroy')
-            ->middleware('permission:calendar.delete');
+            Route::post('/events', [CalendarController::class, 'store'])
+                ->name('calendar.events.store')
+                ->middleware('permission:calendar.create');
+
+            Route::put('/events/{event}', [CalendarController::class, 'update'])
+                ->name('calendar.events.update')
+                ->middleware('permission:calendar.update');
+
+            Route::delete('/events/{event}', [CalendarController::class, 'destroy'])
+                ->name('calendar.events.destroy')
+                ->middleware('permission:calendar.delete');
+        });
+
+        // Calendar - Config (Tipos/Ações)
+        Route::prefix('config/calendar')->group(function () {
+
+            // Tipos
+            Route::get('/types', [CalendarEventTypeController::class, 'index'])
+                ->name('config.calendar.types.index')
+                ->middleware('permission:calendar.types.view');
+
+            Route::post('/types', [CalendarEventTypeController::class, 'store'])
+                ->name('config.calendar.types.store')
+                ->middleware('permission:calendar.types.create');
+
+            Route::put('/types/{type}', [CalendarEventTypeController::class, 'update'])
+                ->name('config.calendar.types.update')
+                ->middleware('permission:calendar.types.update');
+
+            Route::delete('/types/{type}', [CalendarEventTypeController::class, 'destroy'])
+                ->name('config.calendar.types.destroy')
+                ->middleware('permission:calendar.types.delete');
+
+            // Ações
+            Route::get('/actions', [CalendarEventActionController::class, 'index'])
+                ->name('config.calendar.actions.index')
+                ->middleware('permission:calendar.actions.view');
+
+            Route::post('/actions', [CalendarEventActionController::class, 'store'])
+                ->name('config.calendar.actions.store')
+                ->middleware('permission:calendar.actions.create');
+
+            Route::put('/actions/{action}', [CalendarEventActionController::class, 'update'])
+                ->name('config.calendar.actions.update')
+                ->middleware('permission:calendar.actions.update');
+
+            Route::delete('/actions/{action}', [CalendarEventActionController::class, 'destroy'])
+                ->name('config.calendar.actions.destroy')
+                ->middleware('permission:calendar.actions.delete');
+        });
     });
 
-    // Calendar - Eventos
-    Route::prefix('config/calendar')->group(function () {
-        // Tipos
-        Route::get('/types', [CalendarEventTypeController::class, 'index'])
-            ->name('config.calendar.types.index')
-            ->middleware('permission:calendar.types.view');
 
-        Route::post('/types', [CalendarEventTypeController::class, 'store'])
-            ->name('config.calendar.types.store')
-            ->middleware('permission:calendar.types.create');
+//Onboarding
+ 
+    Route::get('/onboarding', [OnboardingController::class, 'index'])->name('onboarding.index');
+    Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
 
-        Route::put('/types/{type}', [CalendarEventTypeController::class, 'update'])
-            ->name('config.calendar.types.update')
-            ->middleware('permission:calendar.types.update');
+//Tenant Switch + Plan
 
-        Route::delete('/types/{type}', [CalendarEventTypeController::class, 'destroy'])
-            ->name('config.calendar.types.destroy')
-            ->middleware('permission:calendar.types.delete');
+    Route::post('/tenants/switch', [TenantSwitchController::class, 'store'])->name('tenants.switch');
 
-        // Ações
-        Route::get('/actions', [CalendarEventActionController::class, 'index'])
-            ->name('config.calendar.actions.index')
-            ->middleware('permission:calendar.actions.view');
-
-        Route::post('/actions', [CalendarEventActionController::class, 'store'])
-            ->name('config.calendar.actions.store')
-            ->middleware('permission:calendar.actions.create');
-
-        Route::put('/actions/{action}', [CalendarEventActionController::class, 'update'])
-            ->name('config.calendar.actions.update')
-            ->middleware('permission:calendar.actions.update');
-
-        Route::delete('/actions/{action}', [CalendarEventActionController::class, 'destroy'])
-            ->name('config.calendar.actions.destroy')
-            ->middleware('permission:calendar.actions.delete');
-    });
-
-    // Onboarding
-    Route::middleware(['auth'])->group(function () {
-
-        Route::get('/onboarding', [OnboardingController::class, 'index'])
-            ->name('onboarding.index');
-
-        Route::post('/onboarding', [OnboardingController::class, 'store'])
-            ->name('onboarding.store');
-    });
-
-    // Tenant Switch (multi-tenancy)
-    Route::post('/tenants/switch', [TenantSwitchController::class, 'store'])
-        ->name('tenants.switch');
-
-    Route::middleware(['auth'])->put('/tenants/{tenant}/plan', [TenantPlanController::class, 'update'])->name('tenants.plan.update');
-
+    Route::put('/tenants/{tenant}/plan', [TenantPlanController::class, 'update'])
+        ->name('tenants.plan.update');
 });
-
 
 require __DIR__ . '/settings.php';
 

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\CompanySetting;
 use Illuminate\Support\Facades\Schema;
+use App\Support\TenantContext;
+use App\Services\TenantPlanService;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -98,6 +100,15 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),
             ],
+
+            //  informações do plano do tenant ativo
+            'tenant_plan' => fn() => ($t = TenantContext::get()) ? [
+                'plan' => $t->plan,
+                'trial_ends_at' => optional($t->trial_ends_at)->toISOString(),
+                'trial_days_left' => app(TenantPlanService::class)->trialDaysLeft($t),
+            ] : null,
+
+            'project_deadline' => fn() => '2026-02-18',
         ];
     }
 }

@@ -11,6 +11,7 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use App\Http\Middleware\SetTenant;
 use App\Http\Middleware\EnsureTenantSelected;
+use App\Http\Middleware\EnsureFeatureEnabled;
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -31,11 +32,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
     ->withMiddleware(function (Middleware $middleware): void {
 
-        // 👉 REGISTAR ALIASES DA SPATIE
+        // REGISTAR ALIASES DA SPATIE
         $middleware->alias([
             'permission' => PermissionMiddleware::class,
             'role' => RoleMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'feature' => EnsureFeatureEnabled::class, // MIDDLEWARE DE FEATURE
         ]);
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
