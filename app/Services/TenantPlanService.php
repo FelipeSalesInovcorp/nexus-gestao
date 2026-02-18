@@ -115,4 +115,55 @@ class TenantPlanService
 
         return max(0, now()->diffInDays($ends, false) + (now()->diffInHours($ends, false) % 24 > 0 ? 1 : 0));
     }
+
+    public function scheduleCancellation(Tenant $tenant, ?int $userId = null, ?Carbon $when = null): void
+    {
+        $from = (string) ($tenant->plan ?? 'free');
+
+        // free, não faz sentido cancelar
+        if ($from === 'free') return;
+
+        // simular fim do ciclo: 30 dias após a última mudança (ou a partir de agora)
+        $base = $tenant->plan_changed_at ? Carbon::parse($tenant->plan_changed_at) : now();
+        $when ??= $base->copy()->addDays(30);
+
+        $tenant->forceFill([
+            'scheduled_plan' => 'free',
+            'scheduled_plan_at' => $when,
+        ])->save();
+
+        $this->logEvent($tenant, $userId, 'cancellation_scheduled', $from, 'free', [
+            'scheduled_plan_at' => $when->toISOString(),
+            'base' => $base->toISOString(),
+        ]);
+    }
+
+    public function applyCancellationIfDue(Tenant $tenant, ?int $userId = null): void
+    {
+        // cancelamento é um caso particular de scheduled_plan = free
+        if (($tenant->scheduled_plan ?? null) !== 'free') return;
+        if (!$tenant->scheduled_plan_at) return;
+        if ($tenant->scheduled_plan_at->isFuture()) return;
+
+        $from = (string) ($tenant->plan ?? 'free');
+        if ($from === 'free') {
+            // já está free, só limpa agendamento
+            $tenant->forceFill([
+                'scheduled_plan' => null,
+                'scheduled_plan_at' => null,
+            ])->save();
+            return;
+        }
+
+        $tenant->forceFill([
+            'plan' => 'free',
+            'trial_ends_at' => null,
+            'plan_changed_at' => now(),
+            'scheduled_plan' => null,
+            'scheduled_plan_at' => null,
+        ])->save();
+
+        $this->logEvent($tenant, $userId, 'cancellation_applied', $from, 'free');
+        $this->logEvent($tenant, $userId, 'plan_changed', $from, 'free');
+    }
 }

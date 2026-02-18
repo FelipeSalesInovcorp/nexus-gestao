@@ -65,6 +65,9 @@ class SetTenant
         //   downgrade agendado (lazy)
         $svc->applyScheduledDowngradeIfDue($tenant, $user->id);
 
+        // cancelamento agendado (lazy)
+        $svc->applyCancellationIfDue($tenant, $user->id);
+
         // refresh + reset context só se algo mudou
         $tenant->refresh();
 

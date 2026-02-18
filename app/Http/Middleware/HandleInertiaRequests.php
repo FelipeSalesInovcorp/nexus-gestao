@@ -108,6 +108,20 @@ class HandleInertiaRequests extends Middleware
                 'trial_days_left' => app(TenantPlanService::class)->trialDaysLeft($t),
             ] : null,
 
+            
+            // features do plano do tenant ativo (para esconder/mostrar menus no frontend)
+            'features' => fn() => ($t = TenantContext::get())
+                ? (config('plan_features.' . ($t->plan ?? 'free')) ?? [])
+                : (config('plan_features.free') ?? []),
+
+            // tenant ativo (objeto leve) - útil no frontend
+            'tenant' => fn() => ($t = TenantContext::get()) ? [
+                'id' => $t->id,
+                'name' => $t->name,
+                'plan' => $t->plan ?? 'free',
+            ] : null,
+
+
             'project_deadline' => fn() => '2026-02-18',
         ];
     }

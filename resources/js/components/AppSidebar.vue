@@ -38,6 +38,7 @@ type TenantOpt = { id: number; name: string; slug?: string | null };
 
 type NavItemWithPermission = NavItem & {
     permission?: string | string[]; // string = 1 perm; array = any-of
+    feature?: string;
     children?: NavItemWithPermission[];
 };
 
@@ -137,7 +138,7 @@ function hasPermission(required?: string | string[]) {
     return reqList.some((p) => permissions.value.includes(p));
 }
 
-function filterNav(items: NavItemWithPermission[]): NavItemWithPermission[] {
+/*function filterNav(items: NavItemWithPermission[]): NavItemWithPermission[] {
     return (items ?? [])
         .map((item) => {
             const filteredChildren = item.children
@@ -156,6 +157,44 @@ function filterNav(items: NavItemWithPermission[]): NavItemWithPermission[] {
             return { ...item, children: filteredChildren };
         })
         .filter(Boolean) as NavItemWithPermission[];
+}*/
+
+function filterNav(items: NavItemWithPermission[]): NavItemWithPermission[] {
+    return (items ?? [])
+        .map((item) => {
+            const filteredChildren = item.children
+                ? filterNav(item.children)
+                : undefined;
+
+            // filtra por permission + feature
+            if (!hasPermission(item.permission)) return null;
+            if (!hasFeature(item.feature)) return null;
+
+            // se tiver children e nenhum passar, remove o grupo
+            if (
+                item.children &&
+                (!filteredChildren || filteredChildren.length === 0)
+            ) {
+                return null;
+            }
+
+            return { ...item, children: filteredChildren };
+        })
+        .filter(Boolean) as NavItemWithPermission[];
+}
+
+// ---------------- Funcionalidades/Features (ex: logs)
+const features = computed<Record<string, boolean>>(() => {
+    // se ainda não estiveres a partilhar do backend, fica vazio e não esconde nada
+    return ((page.props as any).features ?? {}) as Record<string, boolean>;
+});
+
+function hasFeature(required?: string) {
+    if (!required) return true;
+
+    const f = features.value ?? {};
+    if (f['*'] === true) return true;
+    return f[required] === true;
 }
 
 // ---------------- Menu ----------------
@@ -226,6 +265,31 @@ const mainNavItems: NavItemWithPermission[] = [
         icon: Calendar,
         permission: 'calendar.view',
     },
+    {
+        title: 'Tenant',
+        icon: Building2,
+        children: [
+            {
+                title: 'Plano do Tenant',
+                href: '/tenant/plan',
+                icon: Settings,
+            },
+            {
+                title: 'Histórico do Tenant',
+                href: '/tenant/events',
+                icon: FileText,
+                //permission: 'logs.view',
+                //feature: 'logs',
+            },
+            {
+                title: 'Onboarding Checklist',
+                href: '/onboarding/checklist',
+                icon: Settings,
+                // permission opcional
+            },
+        ],
+    },
+
     {
         title: 'Configuração',
         icon: Settings,
