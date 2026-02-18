@@ -31,7 +31,6 @@ use App\Support\TenantContext;
 
 
 // Public
-
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canRegister' => Features::enabled(Features::registration()),
@@ -41,8 +40,8 @@ Route::get('/', function () {
 // Logo da empresa (armazenado fora de public_html)
 Route::get('/company/logo', [CompanyController::class, 'logo'])->name('company.logo');
 
-//Dashboard (auth + verified)
 
+// Dashboard (auth + verified)
 Route::get('dashboard', function () {
     $tenant = TenantContext::get();
 
@@ -70,6 +69,23 @@ Route::get('dashboard', function () {
     $deadlineWarnDays = (int) config('plan_limits.delivery_warn_days', 5);
     $deliveryDaysLeft = (int) $today->diffInDays($deadline, false);
 
+    // ---------- Downgrade/Cancelamento agendado ----------
+    $scheduled = null;
+
+    if ($tenant && $tenant->scheduled_plan && $tenant->scheduled_plan_at) {
+        $scheduledAt = Carbon::parse($tenant->scheduled_plan_at)->startOfDay();
+        $scheduledDaysLeft = (int) $today->diffInDays($scheduledAt, false);
+
+        $scheduled = [
+            'to' => $tenant->scheduled_plan,
+            'at' => $scheduledAt->toDateTimeString(),
+            'days_left' => $scheduledDaysLeft,
+            'label' => $tenant->scheduled_plan === 'free'
+                ? 'Cancelamento/Downgrade agendado'
+                : 'Downgrade agendado',
+        ];
+    }
+
     // ---------- Últimos eventos do tenant ----------
     $tenantEvents = [];
     if ($tenant) {
@@ -78,7 +94,7 @@ Route::get('dashboard', function () {
             ->latest('id')
             ->take(10)
             ->get(['id', 'type', 'from', 'to', 'meta', 'created_at'])
-            ->map(fn ($e) => [
+            ->map(fn($e) => [
                 'id' => $e->id,
                 'type' => $e->type,
                 'from' => $e->from,
@@ -106,13 +122,16 @@ Route::get('dashboard', function () {
             'warn' => $deliveryDaysLeft <= $deadlineWarnDays,
             'days_left' => $deliveryDaysLeft,
         ],
+
+        // Agendamento de downgrade/cancelamento
+        'scheduled' => $scheduled,
+
         'tenantEvents' => $tenantEvents,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
 // App (auth + verified)
-
 Route::middleware(['auth', 'verified'])->group(function () {
 
 //Base (sem gating)
@@ -149,7 +168,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/config/company', [CompanyController::class, 'update'])->name('config.company.update');
 
  //Proposals (feature gated)
-
     Route::middleware(['feature:proposals'])->group(function () {
         Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals.index');
         Route::get('/proposals/create', [ProposalController::class, 'create'])->name('proposals.create');
@@ -167,7 +185,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
 //Orders (feature gated)
-
     Route::middleware(['feature:orders'])->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
@@ -186,7 +203,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 //Supplier Orders (feature gated)
- 
     Route::middleware(['feature:supplier_orders'])->prefix('supplier-orders')->group(function () {
         Route::get('/', [SupplierOrderController::class, 'index'])->name('supplier-orders.index');
         Route::get('/{supplierOrder}', [SupplierOrderController::class, 'show'])->name('supplier-orders.show');
@@ -195,7 +211,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 //Finance - Supplier Invoices (feature gated)
- 
     Route::middleware(['feature:supplier_invoices'])->prefix('finance')->group(function () {
 
         Route::get('/supplier-invoices', [SupplierInvoiceController::class, 'index'])
@@ -231,9 +246,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('supplier-invoices.downloadProof');
     });
 
-
 //Access Management (feature gated + permission gated)
-
     Route::middleware(['feature:access_management'])->prefix('access')->group(function () {
 
         // Users
@@ -280,13 +293,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
 //Logs (feature gated + permission gated)
-
     Route::get('/logs', [LogController::class, 'index'])
         ->middleware(['feature:logs', 'permission:logs.view'])
         ->name('logs.index');
  
 //Calendar (feature gated + permission gated)
-
     Route::middleware(['feature:calendar'])->group(function () {
 
         Route::prefix('calendar')->group(function () {
@@ -353,7 +364,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 //Onboarding
- 
     Route::get('/onboarding', [OnboardingController::class, 'index'])->name('onboarding.index');
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
 
@@ -363,6 +373,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::put('/tenants/{tenant}/plan', [TenantPlanController::class, 'update'])
         ->name('tenants.plan.update');
+
+
+    // Tenant Events (feature gated + permission gated)
+    /*Route::middleware(['feature:logs'])
+    ->get('/tenant/events', [\App\Http\Controllers\TenantEventController::class, 'index'])
+    ->name('tenant.events');*/
+
+    Route::get('/tenant/events', [\App\Http\Controllers\TenantEventController::class, 'index'])
+        ->name('tenant.events');
+    // Se quiseres restringir por permissões (opcional):
+    // ->middleware('permission:logs.view');
+
+    Route::get('/tenant/plan', function () {
+    $tenant = \App\Support\TenantContext::get();
+    abort_unless($tenant, 404);
+
+        return Inertia::render('Tenant/Plan', [
+            'tenant' => [
+                'id' => $tenant->id,
+                'plan' => $tenant->plan,
+                'scheduled_plan' => $tenant->scheduled_plan,
+                'scheduled_plan_at' => optional($tenant->scheduled_plan_at)?->toDateTimeString(),
+            ],
+        ]);
+    })->name('tenant.plan');
+    
+    // Cancelamento (feature gated)
+    Route::post('/tenant/cancel', [\App\Http\Controllers\TenantCancellationController::class, 'store'])
+        ->name('tenant.cancel');
+
+    
+    // Onboarding Checklist (feature gated)
+    Route::get('/onboarding/checklist', [\App\Http\Controllers\OnboardingChecklistController::class, 'index'])
+    ->name('onboarding.checklist');
+
 });
 
 require __DIR__ . '/settings.php';

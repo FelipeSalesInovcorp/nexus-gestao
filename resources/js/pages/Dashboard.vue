@@ -14,7 +14,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const page = usePage<any>();
 const tenantPlan = computed(() => page.props.tenantPlan);
-const delivery = computed(() => page.props.delivery);
+//const delivery = computed(() => page.props.delivery);
+const scheduled = computed(() => page.props.scheduled);
 
 const planLabel = computed(() => {
     const p = tenantPlan.value?.plan ?? 'trial';
@@ -39,21 +40,34 @@ const planLabel = computed(() => {
                 </p>
             </div>
 
-            <!-- ✅ Banner deadline entrega -->
+            <!-- ✅ Banner downgrade/cancelamento agendado -->
             <div
-                v-if="delivery?.warn"
+                v-if="scheduled && typeof scheduled.days_left === 'number'"
                 class="rounded-lg border border-border/50 bg-background/40 p-3 text-sm"
             >
-                <div class="font-semibold">Entrega do projeto</div>
+                <div class="font-semibold">
+                    {{ scheduled.label ?? 'Mudança agendada' }}
+                </div>
+
                 <div class="opacity-80">
-                    Deadline: <b>{{ delivery.deadline }}</b>
-                    <span v-if="typeof delivery.days_left === 'number'">
-                        — faltam {{ delivery.days_left }} dia(s)
+                    Vai mudar para <b>{{ scheduled.to }}</b>
+                    <span v-if="scheduled.days_left > 0">
+                        — faltam {{ scheduled.days_left }} dia(s)
                     </span>
+                    <span v-else> — aplica hoje </span>
+                    <span class="opacity-70"> ({{ scheduled.at }})</span>
+                </div>
+
+                <div class="mt-2">
+                    <Link href="/tenant/plan">
+                        <Button size="sm" variant="outline"
+                            >Ver detalhes</Button
+                        >
+                    </Link>
                 </div>
             </div>
 
-            <!-- ✅ Banner trial warning -->
+            <!-- Banner trial warning -->
             <div
                 v-if="tenantPlan?.trial_warning"
                 class="rounded-lg border border-border/50 bg-background/40 p-3 text-sm"
@@ -67,7 +81,7 @@ const planLabel = computed(() => {
                 </div>
             </div>
 
-            <!-- ✅ Card plano + uso -->
+            <!-- Card plano + uso -->
             <Card
                 class="border-sidebar-border/70 bg-slate-900/40 dark:border-sidebar-border"
             >
